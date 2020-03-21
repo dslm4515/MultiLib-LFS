@@ -1,0 +1,105 @@
+#! /bin/bash
+
+# GCC for Final system
+# Adjust version for newer sources
+
+case $(uname -m) in
+  x86_64)
+    sed -e '/m64=/s/lib64/lib/' \
+        -i.orig gcc/config/i386/t-linux64
+  ;;
+esac
+
+sed -e '1161 s|^|//|' \
+    -i libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cc
+
+# Build 64-bit first ...
+mkdir -v build
+cd       build
+
+SED=sed                               \
+../configure --prefix=/usr            \
+             --enable-languages=c,c++ \
+             --enable-multilib \
+             --disable-bootstrap      \
+             --with-system-zlib --libexecdir=/usr/lib --disable-libmpx --disable-nls
+
+make 
+
+# Prepare for testing ...
+ulimit -s 32768 && chown -Rv nobody .  && su nobody -s /bin/bash -c "PATH=$PATH make -k check"
+../contrib/test_summary
+
+# Install
+make install
+
+# Remove unneeded directory 
+rm -rf /usr/lib/gcc/$(gcc -dumpmachine)/9.2.0/include-fixed/bits/
+chown -v -R root:root \
+    /usr/lib/gcc/*linux-gnu/9.2.0/include{,-fixed}
+
+# Create compatibilty links
+ln -sv ../usr/bin/cpp /lib
+ln -sv gcc /usr/bin/cc
+
+# Add compatibilty link to enable compiling with Link Time Optimization (LTO)
+install -v -dm755 /usr/lib/bfd-plugins
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/9.2.0/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+
+# Move a misplaced file
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+
+# Sanity Check for 64bit
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose  &> dummy.log
+readelf -l a.out | grep ': /lib'
+#[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib/crt1.o succeeded
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib/crti.o succeeded
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib/crtn.o succeeded
+grep -B4 '^ /usr/include' dummy.log
+##include <...> search starts here:
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/include
+#/usr/local/include
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/include-fixed
+#/usr/include
+grep 'SEARCH.*/usr/lib' dummy.log | sed 's|; |\n|g'
+#SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+#SEARCH_DIR("/usr/lib")
+#SEARCH_DIR("/lib")
+#SEARCH_DIR("/usr/lib32")
+#SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib");
+grep '/lib.*/libc.so.6 ' dummy.log
+#attempt to open /lib/libc.so.6 succeeded
+grep found dummy.log
+#found ld-linux-x86-64.so.2 at /lib/ld-linux-x86-64.so.2
+
+# Sanity check for 32bit
+echo 'int main(){}' > dummy.c
+cc -m32 dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+#[Requesting program interpreter: /lib/ld-linux.so.2]
+grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib32/crt1.o succeeded
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib32/crti.o succeeded
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/../../../../lib32/crtn.o succeeded
+grep -B4 '^ /usr/include' dummy.log
+##include <...> search starts here:
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/include
+#/usr/local/include
+#/usr/lib/gcc/x86_64-pc-linux-gnu/8.3.0/include-fixed
+#/usr/include
+grep 'SEARCH.*/usr/lib' dummy.log | sed 's|; |\n|g'
+#SEARCH_DIR("/usr/i386-pc-linux-gnu/lib32")
+#SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib32")
+#SEARCH_DIR("/usr/lib")
+#SEARCH_DIR("/lib")
+#SEARCH_DIR("/usr/lib32")
+#SEARCH_DIR("/usr/i386-pc-linux-gnu/lib");
+grep '/lib.*/libc.so.6 ' dummy.log
+#attempt to open /usr/lib32/libc.so.6 succeeded
+grep found dummy.log
+#found ld-linux.so.2 at /usr/lib32/ld-linux.so.2

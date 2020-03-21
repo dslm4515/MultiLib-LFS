@@ -1,0 +1,10 @@
+#! /bin/bash
+
+# Strip toolchain of debugging symbols to reduce size.
+
+strip --strip-debug /tools/lib/*
+/usr/bin/strip --strip-unneeded /tools/{,s}bin/*
+rm -rf /tools/{,share}/{info,man,doc}
+find /tools/{lib,libexec} -name \*.la -delete
+strip --strip-debug /tools/lib32/*
+find /tools/lib32 -name \*.la -delete
