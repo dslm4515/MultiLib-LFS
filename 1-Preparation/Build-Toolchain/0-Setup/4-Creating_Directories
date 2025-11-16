@@ -1,0 +1,27 @@
+# All programs compiled in Stage 1 will be installed under 
+# $LFS/tools to keep them separate from the programs 
+# compiled in Stage 3. The programs compiled here are 
+# temporary tools and will not be a part of the final LFS 
+# system. By keeping these programs in a separate directory, 
+# they can easily be discarded later after their use. This 
+# also prevents these programs from ending up in the host 
+# production directories (easy to do by accident in Stage 1).
+
+# Create a directories for stage 0, the cross-tools, and stage 1,
+#  as root:
+mkdir -v $LFS/{cross-,}tools
+
+# The next step is to create a symlinks on the host 
+# system. This will point to the newly-created directories on 
+# the LFS partition. Run this command as root as well:
+ln -sv $LFS/tools       /
+ln -sv $LFS/cross-tools /
+
+# The created symlinks enables the toolchain to be compiled so 
+# that it always refers to /tools, meaning that the compiler, 
+# assembler, and linker will work both in later (when we 
+# are still using some tools from the host) and in the next 
+# (when we are “chrooted” to the LFS partition).
+
+# Create additional directories for this multi-lib build
+mkdir -pv $LFS/tools/lib{,64,32}
