@@ -1,0 +1,19 @@
+# Cross-Tools: Kernel Headers
+# Build & install as user lfs
+
+# Clean sources
+make mrproper
+
+# Extract the headers
+make headers
+
+# Create the directory for the headers
+#mkdir -pv /cross-tools/${LFS_TGT}/include
+
+# Install headers for cross-tools
+#cp -rv usr/include/* /cross-tools/${LFS_TGT}/include
+cp -rv usr/include /cross-tools/
+
+# Remove any files not headers:
+#find /cross-tools/${LFS_TGT}/include -type f ! -name '*.h' -delete
+find /cross-tools/include -type f ! -name '*.h' -delete

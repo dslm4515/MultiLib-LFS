@@ -1,0 +1,9 @@
+# Cross-Tools: File
+# Build and install as lfs
+
+# Configure source
+CC=${LFS_TGT}-gcc \
+./configure --prefix=/cross-tools --disable-libseccomp
+
+# Build and install
+make && make install
