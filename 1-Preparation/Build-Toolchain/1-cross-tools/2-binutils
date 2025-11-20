@@ -7,9 +7,7 @@ mkdir -v build && cd build
 # Set the build options
 export  CARGS="--prefix=/cross-tools "
 export CARGS+="--target=${LFS_TGT} "
-#export CARGS+="--with-sysroot=/cross-tools/${LFS_TGT} "
 export CARGS+="--with-sysroot=/cross-tools "
-export CARGS+="--with-lib-path=/cross-tools/lib:/cross-tools/lib64 "
 export CARGS+="--disable-nls "
 export CARGS+="--disable-werror "
 export CARGS+="--enable-gprofng=no "
@@ -22,7 +20,6 @@ export CARGS+="--enable-relro "
 export CARGS+="--enable-default-pie "
 export CARGS+="--enable-static-pie "
 export CARGS+="--disable-linker-build-id "
-#export CARGS+="--enable-multilib "
 export CARGS+="--disable-multilib "
 
 # Configure source

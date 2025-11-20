@@ -15,17 +15,17 @@ mkdir -v build
 cd       build
 
 # Set the build options
-export  CARGS="--prefix=/cross-tools "
+export  CARGS="--prefix=/  "
 export CARGS+="--host=$LFS_TGT "
 export CARGS+="--build=$(../scripts/config.guess) "
 export CARGS+="--enable-kernel=5.4 "
 export CARGS+="--with-headers=/cross-tools/include "
 export CARGS+="--disable-nscd "
-export CARGS+="libc_cv_slibdir=/cross-tools/lib " 
+export CARGS+="--disable-werror "
+export CARGS+="--without-selinux "
+export CARGS+="libc_cv_slibdir=/lib "
 
-export CARGS+="--disable-werror --with-headers=/cross-tools/include "
-
-# Ensure that the ldconfig and sln utilities are installed into /tools/bin:
+# Ensure that the ldconfig and sln utilities are installed into /cross-tools/bin:
 echo "rootsbindir=/cross-tools/bin" > configparms 
 
 # Configure the source
@@ -35,7 +35,10 @@ echo "rootsbindir=/cross-tools/bin" > configparms
 make
 
 # Install to cross-tools
-make install
+make install DESTDIR=/cross-tools
 
-# Creat a link so the dynamic loader can be found
-ln -sv lib /cross-tools/lib64
+# Move misplaced binaries
+mv /cross-tools/cross-tools/bin/* /cross-tools/bin/
+rm -r /cross-tools/cross-tools
+
+
