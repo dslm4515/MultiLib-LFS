@@ -1,9 +1,14 @@
 # Cross-Tools: File
 # Build and install as lfs
 
+# Set the build options
+export  CARGS="--disable-libseccomp "
+export CARGS+="--host=$(./config.guess) "
+export CARGS+="--target=${LFS_TGT} "
+
 # Configure source
 CC=${LFS_TGT}-gcc \
-./configure --prefix=/cross-tools --disable-libseccomp
+./configure --prefix=/cross-tools $CARGS
 
 # Build and install
 make && make install
