@@ -41,4 +41,8 @@ make install DESTDIR=/cross-tools
 mv /cross-tools/cross-tools/bin/* /cross-tools/bin/
 rm -r /cross-tools/cross-tools
 
-
+# Fix a hard coded path to the executable loader in the 
+# ldd script (/cross-tools/bin/ldd)
+sed -i 's/lib64/cross-tools\/lib64/g' /cross-tools/bin/ldd
+sed -i 's/lib\/ld-linux.so.2/cross-tools\/lib\/ld-linux.so.2/g' /cross-tools/bin/ldd
+sed -i 's/libx32/cross-tools\/libx32/g' /cross-tools/bin/ldd
