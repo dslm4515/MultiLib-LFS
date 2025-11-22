@@ -22,7 +22,7 @@ export CARGS+="--enable-static-pie "
 export CARGS+="--disable-linker-build-id "
 #export CARGS+="--disable-multilib "
 
-export CARGS+="--with-lib-path=/cross-tools/lib:/cross-tools/lib64 "
+export CARGS+="--with-lib-path=/cross-tools/lib:/cross-tools/lib64:/cross-tools/lib32 "
 
 # Configure source
 ../configure $CARGS
