@@ -79,3 +79,21 @@ install -vm644 DESTDIR/include/gnu/{lib-names,stubs}-32.h \
                /cross-tools/include/gnu/
 ln -svf ../lib32/ld-linux.so.2 /cross-tools/lib/ld-linux.so.2
 
+## Fix up the cross-tools
+
+# Create a link so GCC can find the runtime objects
+mv /cross-tools/x86_64-lfs-linux-gnu/lib/* /cross-tools/lib/
+rm -rv /cross-tools/x86_64-lfs-linux-gnu/lib
+ln -sv /cross-tools/lib /cross-tools/x86_64-lfs-linux-gnu/lib
+
+# Create a GCC specs file to add correct search path for headers
+export SPECFILE=`dirname $(${LFS_TGT}-gcc -print-libgcc-file-name)`/specs
+${LFS_TGT}-gcc -dumpspecs > specs
+
+# Modify specs to add /cross-tools/include path
+sed -i 's/D_REENTRANT}/D_REENTRANT} -I\/cross-tools\/include /g' specs
+
+# Install modified specs to the cross toolchain
+mv -v specs $SPECFILE
+unset SPECFILE
+
