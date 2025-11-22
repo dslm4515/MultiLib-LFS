@@ -20,7 +20,9 @@ export CARGS+="--enable-relro "
 export CARGS+="--enable-default-pie "
 export CARGS+="--enable-static-pie "
 export CARGS+="--disable-linker-build-id "
-export CARGS+="--disable-multilib "
+#export CARGS+="--disable-multilib "
+
+export CARGS+="--with-lib-path=/cross-tools/lib:/cross-tools/lib64 "
 
 # Configure source
 ../configure $CARGS
