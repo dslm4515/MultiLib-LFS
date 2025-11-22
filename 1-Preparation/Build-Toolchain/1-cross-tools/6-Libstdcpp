@@ -56,3 +56,6 @@ make install-strip DESTDIR=/cross-tools
 # Move misplaced headers
 mv /cross-tools/cross-tools/include/c++ /cross-tools/include/
 
+# Remove the libtool archive files because they are harmful for 
+# cross-compilation:
+rm -v /cross-tools/lib{,32}/lib{stdc++{,exp,fs},supc++}.la
