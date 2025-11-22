@@ -82,3 +82,42 @@ EOF
 # Finally, to have the environment fully prepared for building 
 # the temporary tools, source the just-created user profile:
 source ~/.bash_profile
+
+# Create a cache file to use freshed built cross-gcc & cross-binutils
+# when building /tools
+cat > config.cache << EOF
+CC="${LFS_TGT}-gcc"
+CXX="${LFS_TGT}-g++"
+AR="${LFS_TGT}-ar"
+AS="${LFS_TGT}-as"
+RANLIB="${LFS_TGT}-ranlib"
+LD="${LFS_TGT}-ld"
+STRIP="${LFS_TGT}-strip"
+CC_FOR_BUILD="${LFS_TGT}-gcc"
+CXX_FOR_BUILD="${LFS_TGT}-g++"
+AR_FOR_BUILD="${LFS_TGT}-ar"
+AS_FOR_BUILD="${LFS_TGT}-as"
+RANLIB_FOR_BUILD="${LFS_TGT}-ranlib"
+LD_FOR_BUILD="${LFS_TGT}-ld"
+STRIP_FOR_BUILD="${LFS_TGT}-strip"
+EOF
+# Create another for 32-bit builds
+cat > config32.cache << EOF
+CC="${LFS_TGT}-gcc -m32"
+CXX="${LFS_TGT}-g++ -m32"
+AR="${LFS_TGT}-ar"
+AS="${LFS_TGT}-as"
+RANLIB="${LFS_TGT}-ranlib"
+LD="${LFS_TGT}-ld"
+STRIP="${LFS_TGT}-strip"
+CC_FOR_BUILD="${LFS_TGT}-gcc"
+CXX_FOR_BUILD="${LFS_TGT}-g++"
+AR_FOR_BUILD="${LFS_TGT}-ar"
+AS_FOR_BUILD="${LFS_TGT}-as"
+RANLIB_FOR_BUILD="${LFS_TGT}-ranlib"
+LD_FOR_BUILD="${LFS_TGT}-ld"
+STRIP_FOR_BUILD="${LFS_TGT}-strip"
+EOF
+
+mv config32.cache $LFS/sources/files/ct-config32.cache
+mv config.cache $LFS/sources/files/ct-config.cache
