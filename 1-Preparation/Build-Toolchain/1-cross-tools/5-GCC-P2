@@ -1,0 +1,14 @@
+# Cross-Tools: GCC Pass 2
+# Build and install as lfs
+
+# Use the same build directory & source used for
+# Pass 1
+
+# Clean build target
+make -C ${LFS_TGT}/libgcc distclean
+
+# Rebuild libgcc as shared
+make enable_shared=yes all-target-libgcc
+
+# Installed shared libgcc without debugging symbols
+make install-strip-target-libgcc DESTDIR=/cross-tools

@@ -68,7 +68,8 @@ export CARGS+="--disable-libvtv "
 export CARGS+="--disable-libcilkrts "
 export CARGS+="--disable-libstdc++-v3 "
 
-# The GCC documentation recommends building GCC in a dedicated build directory
+# The GCC documentation recommends building GCC in a 
+# dedicated build directory
 mkdir -v build
 cd       build
 
@@ -90,3 +91,6 @@ CFLAGS='-pipe -g0 -O0' CXXFLAGS='-pipe -g0 -O0' make enable_shared=no all-target
 
 # Install static libgcc without debugging symbols
 make install-strip-target-libgcc DESTDIR=/cross-tools
+
+# NOTE: Do not remove build directory and source tree. Both will be 
+# used in Pass 2.
