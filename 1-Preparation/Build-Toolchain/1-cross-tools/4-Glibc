@@ -65,6 +65,9 @@ sed -i 's/D_REENTRANT}/D_REENTRANT} -I\/cross-tools\/include /g' specs
 mv -v specs $SPECFILE
 unset SPECFILE
 
+# Create missing link for lib64
+ln -sv lib /cross-tools/lib64
+
 ## Build the 32-bit version of glibc
 
 # clean the build directory:
