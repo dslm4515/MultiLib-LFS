@@ -44,11 +44,15 @@ export CARGS+="--with-gxx-include-dir=/cross-tools/include/c++/15.2.0 "
 mkdir -v build
 cd       build
 
-# Configure source ... but fails.
+# Configure source 
 ../libstdc++-v3/configure $CARGS
 
 # Compile
 make
 
 # Install to cross-tools
-make install-strip-target-libstdc++-v3 DESTDIR=/cross-tools
+make install-strip DESTDIR=/cross-tools
+
+# Move misplaced headers
+mv /cross-tools/cross-tools/include/c++ /cross-tools/include/
+
