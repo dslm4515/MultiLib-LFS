@@ -35,7 +35,7 @@ chmod -v a+wt $LFS/sources
 
 # Keep thh sources neat by keeping the 'tarballs' seperate
 # from the patches. As root:
-mkdir -v $LFS/sources/{patches,pkgs}
+mkdir -v $LFS/sources/{patches,pkgs,files}
 
 # An easy way to download all of the packages and patches is 
 # by using wget-list (provided in this repo) as an input to 
