@@ -90,37 +90,3 @@ CFLAGS='-pipe -g0 -O0' CXXFLAGS='-pipe -g0 -O0' make enable_shared=no all-target
 
 # Install static libgcc without debugging symbols
 make install-strip-target-libgcc DESTDIR=/cross-tools
-
-# Clean build target
-make -C ${LFS_TGT}/libgcc distclean
-
-# Rebuild libgcc as shared
-make enable_shared=yes all-target-libgcc 
-
-# Installed shared libgcc without debugging symbols
-make install-strip-target-libgcc DESTDIR=/cross-tools
-
-# Build libstdc++
-make all-target-libstdc++-v3
-
-# Install libstdc++ without debugging symbols
-make install-strip-target-libstdc++-v3 DESTDIR=/cross-tools
-
-# OPTIONAL: Build & install libgomp 
-make all-target-libgomp
-make install-strip-target-libgomp DESTDIR=/cross-tools
-
-# OPTIONAL: Build & install libquadmath
-make all-target-libquadmath
-make install-strip-target-libquadmath DESTDIR=/cross-tools
-
-# Dump the GCC spec file
-export SPECFILE=`dirname $(${LFS_TGT}-gcc -print-libgcc-file-name)`/specs
-${LFS_TGT}-gcc -dumpspecs > specs
-
-# Adjust the specs file to set the correct dynamic loader by replacing all
-# instances of /lib64/ld-linux-x86-64.so.2 to /cross-tools/lib/ld-linux-x86-64.so.2
-
-# Then install it 
-mv -v specs $SPECFILE
-unset SPECFILE
