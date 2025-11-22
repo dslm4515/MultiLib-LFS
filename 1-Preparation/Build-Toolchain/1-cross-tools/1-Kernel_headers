@@ -7,13 +7,14 @@ make mrproper
 # Extract the headers
 make headers
 
-# Create the directory for the headers
-#mkdir -pv /cross-tools/${LFS_TGT}/include
-
-# Install headers for cross-tools
-#cp -rv usr/include/* /cross-tools/${LFS_TGT}/include
+# Install headers for both cross-tools & tools
+# *NOTE* Since host & target are on the same CPU
+# architecture, install headers to /tools and 
+# both for cross-tools & tools to use
+cp -rv usr/include /tools/
 cp -rv usr/include /cross-tools/
 
-# Remove any files not headers:
-#find /cross-tools/${LFS_TGT}/include -type f ! -name '*.h' -delete
+# Clean up the installed headers by removing
+# any files non-headers:
+find /tools/include -type f ! -name '*.h' -delete
 find /cross-tools/include -type f ! -name '*.h' -delete
