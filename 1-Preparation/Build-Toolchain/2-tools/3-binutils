@@ -1,0 +1,39 @@
+# Tools: Binutils
+# Build & install as LFS
+
+# The Binutils documentation recommends building 
+# Binutils in a dedicated build directory:
+mkdir -v build
+cd       build
+
+# Set the build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--with-sysroot=$LFS "
+export CARGS+="--with-lib-path=/tools/lib:/tools/lib64:/tools/lib32 "
+export CARGS+="--target=${LFS_TGT} "
+export CARGS+="--host=${LFS_TGT} "
+export CARGS+="--build=$(../config.guess) "
+export CARGS+="--disable-nls "
+export CARGS+="--disable-werror "
+export CARGS+="--enable-gprofng=no "
+export CARGS+="--enable-new-dtags "
+export CARGS+="--enable-default-hash-style=gnu "
+
+# Create a cache file to configure
+# the source to build with cross-tools
+cp -v ../../files/t-config.cache config.cache
+
+# Configue source
+../configure $CARGS --cache-file=config.cache
+
+# Compile
+make
+
+# Install
+make install
+
+# Build and install linker that will be used later 
+# after adjusting toolchain
+make -C ld clean
+make -C ld LIB_PATH=/usr/lib64:/lib 
+cp -v ld/ld-new /tools/bin

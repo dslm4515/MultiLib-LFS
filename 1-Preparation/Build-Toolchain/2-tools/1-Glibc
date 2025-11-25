@@ -1,0 +1,83 @@
+# Tools: Glibc 
+# Build and install as lfs
+
+# Create a symbolic link for LSB compliance. Additionally, 
+# for x86_64, create a compatibility symbolic link required 
+# for proper operation of the dynamic library loader: 
+mkdir -pv /tools/lib64
+ln -sfv ../lib/ld-linux-x86-64.so.2 /tools/lib64
+ln -sfv ../lib/ld-linux-x86-64.so.2 /tools/lib64/ld-lsb-x86-64.so.3
+
+# Some of the Glibc programs use the non-FHS-compliant 
+# /var/db directory to store their runtime data. Apply the 
+# following patch to make such programs store their runtime 
+# data in the FHS-compliant locations: 
+patch -Np1 -i ../patches/glibc-2.42-fhs-1.patch 
+
+# The Glibc documentation recommends building Glibc in a 
+# dedicated build directory:
+mkdir -v build
+cd       build
+
+# Set the build options
+export  CARGS="--prefix=/tools  "
+export CARGS+="--host=$LFS_TGT "
+export CARGS+="--build=$(../scripts/config.guess) "
+export CARGS+="--enable-kernel=5.4 "
+export CARGS+="--with-headers=/tools/include "
+export CARGS+="--disable-nscd "
+export CARGS+="--disable-werror "
+export CARGS+="--without-selinux "
+export CARGS+="libc_cv_slibdir=/tools/lib "
+
+# Ensure that the ldconfig and sln utilities are installed into /cross-tools/bin:
+echo "rootsbindir=/tools/bin" > configparms 
+
+# Create a cache file to configure
+# the source to build with cross-tools
+cp -v ../../files/ct-config.cache config.cache
+
+# Configue source
+../configure $CARGS --cache-file=config.cache
+
+# Compile
+make
+
+# Install to cross-tools
+make install 
+
+# Build 32-bit version
+
+# Clear the build directoy
+rm -rf ./*
+
+# Create a cache file to configure
+# the source to build with cross-tools
+cp -v ../../files/ct-config32.cache config.cache
+
+# Set the build options
+export  CARGS="--prefix=/tools  "
+export CARGS+="--host=$LFS_TGT32 "
+export CARGS+="--build=$(../scripts/config.guess) "
+export CARGS+="--enable-kernel=5.4 "
+export CARGS+="--with-headers=/tools/include "
+export CARGS+="--libdir=/tools/lib32 "
+export CARGS+="--libexecdir=/tools/lib32 "
+export CARGS+="--disable-nscd "
+export CARGS+="--disable-werror "
+export CARGS+="--without-selinux "
+export CARGS+="libc_cv_slibdir=/tools/lib32 "
+
+# Configure
+../configure $CARGS --cache-file=config.cache
+
+# Compile
+make
+
+# Install
+make DESTDIR=$PWD/DESTDIR install
+cp -a DESTDIR/tools/lib32 /tools/
+install -vm644 DESTDIR/tools/include/gnu/{lib-names,stubs}-32.h \
+               /tools/include/gnu/
+ln -svf ../lib32/ld-linux.so.2 /tools/lib/ld-linux.so.2
+
