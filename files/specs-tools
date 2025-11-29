@@ -1,0 +1,31 @@
+*hdrdir:
+/tools
+
+*prefix:
+/tools
+
+*libdir:
+%{m32:lib32;:lib}
+
+%rename cpp_options old_cpp_options
+
+*cpp_options:
+-nostdinc -isystem %(hdrdir)/include 
+
+*cc1:
+%(cc1_cpu) -isystem %(hdrdir)/include -nostdinc -isystem include%s
+
+*link_libgcc:
+-L%(prefix)/%(libdir) -L .%s
+
+*libgcc:
+libgcc.a%s %:if-exists(libgcc_eh.a%s) %{m32:-m elf_i386;:-m elf_x86_64}
+
+*startfile:
+%{!shared: %(prefix)/%(libdir)/Scrt1.o} %(prefix)/%(libdir)/crti.o crtbeginS.o%s
+
+*endfile:
+crtendS.o%s %(prefix)/%(libdir)/crtn.o
+
+*link:
+-dynamic-linker %(prefix)/%(libdir)/libc.so -nostdlib %{shared:-shared} %{static:-static} %{rdynamic:-export-dynamic}
