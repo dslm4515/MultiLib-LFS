@@ -17,7 +17,12 @@ passwd lfs
 
 # Grant lfs full access to toolchain directories by 
 # making lfs the directory owner:
-chown -v lfs $LFS/{cross-,}tools
+chown -v lfs $LFS/{usr{,/*},var,etc,tools}
+
+case $(uname -m) in
+  x86_64) chown -v lfs $LFS/lib64 ;;
+esac
+chown -v lfs $LFS/{lib32,libx32}
 
 # If a separate working directory was created as 
 # suggested, give user lfs ownership of this directory:
