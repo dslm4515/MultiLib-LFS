@@ -4,9 +4,8 @@
 # Create a symbolic link for LSB compliance. Additionally, 
 # for x86_64, create a compatibility symbolic link required 
 # for proper operation of the dynamic library loader: 
-mkdir -pv /tools/lib64
-ln -sfv ../lib/ld-linux-x86-64.so.2 /tools/lib64
-ln -sfv ../lib/ld-linux-x86-64.so.2 /tools/lib64/ld-lsb-x86-64.so.3
+ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
+ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
 
 # Some of the Glibc programs use the non-FHS-compliant 
 # /var/db directory to store their runtime data. Apply the 
@@ -20,64 +19,111 @@ mkdir -v build
 cd       build
 
 # Set the build options
-export  CARGS="--prefix=/tools  "
+export  CARGS="--prefix=/usr  "
 export CARGS+="--host=$LFS_TGT "
 export CARGS+="--build=$(../scripts/config.guess) "
 export CARGS+="--enable-kernel=5.4 "
-export CARGS+="--with-headers=/tools/include "
 export CARGS+="--disable-nscd "
-export CARGS+="--disable-werror "
-export CARGS+="--without-selinux "
-export CARGS+="libc_cv_slibdir=/tools/lib "
-
-# Ensure that the ldconfig and sln utilities are installed into /cross-tools/bin:
-echo "rootsbindir=/tools/bin" > configparms 
-
-# Create a cache file to configure
-# the source to build with cross-tools
-cp -v ../../files/ct-config.cache config.cache
+export CARGS+="libc_cv_slibdir=/usr/lib "
 
 # Configue source
-../configure $CARGS --cache-file=config.cache
+../configure $CARGS
 
 # Compile
 make
 
-# Install to cross-tools
-make install 
+# Install
+make DESTDIR=$LFS install 
+
+# Fix a hard coded path to the executable loader in the ldd script:
+sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
+
+# It is important to ensure that compiling and linking will work 
+# as expected. We do this by performing some sanity checks: 
+echo 'int main(){}' | $LFS_TGT-gcc -x c - -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+
+# There should be no errors, and the output of the last command will 
+# be (allowing for platform-specific differences in the dynamic 
+# linker name): 
+# [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+
+# Now make sure that we're set up to use the correct start files: 
+grep -E -o "$LFS/lib.*/S?crt[1in].*succeeded" dummy.log
+
+# The output of the last command should be: 
+# /mnt/lfs/lib/../lib/Scrt1.o succeeded
+# /mnt/lfs/lib/../lib/crti.o succeeded
+# /mnt/lfs/lib/../lib/crtn.o succeeded
+
+#  Verify that the compiler is searching for the correct header files: 
+grep -B3 "^ $LFS/usr/include" dummy.log
+
+# This command should return the following output: 
+# include <...> search starts here:
+#  /mnt/lfs/tools/lib/gcc/x86_64-lfs-linux-gnu/15.2.0/include
+#  /mnt/lfs/tools/lib/gcc/x86_64-lfs-linux-gnu/15.2.0/include-fixed
+#  /mnt/lfs/usr/include
+
+# Next, verify that the new linker is being used with the correct 
+# search paths:
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+
+# References to paths that have components with '-linux-gnu' should 
+# be ignored, but otherwise the output of the last command should be: 
+# SEARCH_DIR("=/mnt/lfs/tools/x86_64-lfs-linux-gnu/lib64")
+# SEARCH_DIR("=/usr/local/lib64")
+# SEARCH_DIR("=/lib64")
+# SEARCH_DIR("=/usr/lib64")
+# SEARCH_DIR("=/mnt/lfs/tools/x86_64-lfs-linux-gnu/lib")
+# SEARCH_DIR("=/usr/local/lib")
+# SEARCH_DIR("=/lib")
+# SEARCH_DIR("=/usr/lib");
+
+# Next make sure that we're using the correct libc:
+grep "/lib.*/libc.so.6 " dummy.log
+
+# The output of the last command should be: 
+# attempt to open /mnt/lfs/usr/lib/libc.so.6 succeeded
+
+# Make sure GCC is using the correct dynamic linker: 
+grep found dummy.log
+
+# The output of the last command should be (allowing for 
+# platform-specific differences in dynamic linker name): 
+# found ld-linux-x86-64.so.2 at /mnt/lfs/usr/lib/ld-linux-x86-64.so.2
+
+# Once everything is working correctly, clean up the test files: 
+rm -v a.out dummy.log
 
 # Build 32-bit version
 
 # Clear the build directoy
-rm -rf ./*
-
-# Create a cache file to configure
-# the source to build with cross-tools
-cp -v ../../files/ct-config32.cache config.cache
+make clean
+find .. -name "*.a" -delete
 
 # Set the build options
-export  CARGS="--prefix=/tools  "
-export CARGS+="--host=$LFS_TGT32 "
+export  CARGS="--prefix=/usr  "
+export CARGS+="--host=${LFS_TGT32} "
 export CARGS+="--build=$(../scripts/config.guess) "
 export CARGS+="--enable-kernel=5.4 "
-export CARGS+="--with-headers=/tools/include "
-export CARGS+="--libdir=/tools/lib32 "
-export CARGS+="--libexecdir=/tools/lib32 "
+export CARGS+="--with-headers=${LFS}/usr/include "
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--libexecdir=/usr/lib32 "
 export CARGS+="--disable-nscd "
-export CARGS+="--disable-werror "
-export CARGS+="--without-selinux "
-export CARGS+="libc_cv_slibdir=/tools/lib32 "
+export CARGS+="libc_cv_slibdir=/usr/lib32 "
 
 # Configure
-../configure $CARGS --cache-file=config.cache
+CC="$LFS_TGT-gcc -m32"  \
+CXX="$LFS_TGT-g++ -m32" \
+../configure $CARGS
 
 # Compile
 make
 
 # Install
 make DESTDIR=$PWD/DESTDIR install
-cp -a DESTDIR/tools/lib32 /tools/
-install -vm644 DESTDIR/tools/include/gnu/{lib-names,stubs}-32.h \
-               /tools/include/gnu/
-ln -svf ../lib32/ld-linux.so.2 /tools/lib/ld-linux.so.2
-
+cp -a DESTDIR/usr/lib32 $LFS/usr/
+install -vm644 DESTDIR/usr/include/gnu/{lib-names,stubs}-32.h \
+               $LFS/usr/include/gnu/
+ln -svf ../lib32/ld-linux.so.2 $LFS/lib/ld-linux.so.2
