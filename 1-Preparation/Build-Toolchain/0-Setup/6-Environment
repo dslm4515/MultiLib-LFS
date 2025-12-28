@@ -28,7 +28,7 @@ LC_ALL=POSIX
 LFS_TGT=x86_64-lfs-linux-gnu
 LFS_TGT32=i686-lfs-linux-gnu
 LFS_TGTX32=x86_64-lfs-linux-gnux32
-PATH=/cross-tools/bin:/tools/bin:/bin:/usr/bin
+PATH=${LFS}/tools/bin:/bin:/usr/bin
 CONFIG_SITE=$LFS/usr/share/config.site
 export LFS LC_ALL LFS_TGT LFS_TGT32 LFS_TGTX32 PATH
 EOF
