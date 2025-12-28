@@ -34,15 +34,15 @@ Currently only i686/amd64.
 
 Entire build will build all packages from source. There are 4 stages:
 <ol>
-<li>Cross-tools - Create a very basic toolchain with host's own tool chain. This will be used to build the next stage. It also allows the next stage to be independent from the host's compiler, useful for hosts not using glibc. </li>
-<li>Tools - Creates the tool chain that will be used in the next stage. Resulting toolchain is sandboxed from host and makes it portable across other systems, regardless of libc implementation. Only enough packages are built to chroot and build the rest under chroot.</li>
-<li>Chroot - Once the minimal toolchain is built, enter chroot and build the rest of the toolchain.</li>
-<li>Final - Build the final system under chroot with toolchain.</li>
+<li>Create the intial toolchain that will be used to isolate the new tools from the host system. </li>
+<li>Cross-compile basic utilities using the just built cross-toolchain.</li>
+<li>Enter a "chroot" environment, where we use the new tools to build all the rest of the tools needed to create the LFS system. </li>
+<li>Build the final system under chroot with toolchain.</li>
 </ol>
 
 # Prebuilt Toolchain
 
-If this project has been built before, the old/previous toolchain (tools) can be upgraded to build a newer LFS build. Alternatively, a prebuilt toolchain can be downloaded from past releases and upgraded to build this version. Cross-tools will not be built or required.
+If this project has been built before, the old/previous toolchain (tools) can be upgraded to build a newer LFS build. Alternatively, a prebuilt toolchain can be downloaded from past releases and upgraded to build this version... this is yet to be documented.
 
 ## Directory
 <ul>
