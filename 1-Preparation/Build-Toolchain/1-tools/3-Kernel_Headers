@@ -1,0 +1,15 @@
+# Tools: Kernel headers
+# Build & install as LFS
+
+# Make sure there are no stale files embedded in the package:
+make mrproper
+
+# Now extract the user-visible kernel headers from the source. 
+# The recommended make target “headers_install” cannot be used, 
+# because it requires rsync, which may not be available. The 
+# headers are first placed in ./usr, then copied to the needed 
+# location.
+make headers
+find usr/include -type f ! -name '*.h' -delete
+cp -rv usr/include $LFS/usr
+
