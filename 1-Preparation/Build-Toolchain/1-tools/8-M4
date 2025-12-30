@@ -1,0 +1,13 @@
+# Tools: M4
+# Build & install as LFS
+
+# Prepare M4 for compilation:
+./configure --prefix=/tools   \
+            --host=$LFS_TGT \
+            --build=$(build-aux/config.guess)
+
+# Compile the package: 
+make
+
+# Install the package:
+make install
