@@ -78,6 +78,12 @@ make
 # Install
 make install
 
+# Create a full version of the internal header using a command that is 
+# identical to what the GCC build system does in normal circumstances:
+cd ..
+cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
+  `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/include/limits.h
+
 # Create a symlink. Many programs and scripts run cc instead 
 # of gcc, which is used to keep programs generic and 
 # therefore usable on all kinds of UNIX systems where the 
