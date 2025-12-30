@@ -73,7 +73,7 @@ sed -i 's/tools\/lib64/tools\/lib32/' /tools/bin/ldd
 
 # Some programs are hardcoded for lib64. Create a compatibility
 # link
-ln -sv ../lib /tools/lib64
+ln -sv lib /tools/lib64
 
 # It is important to ensure that compiling and linking will work 
 # as expected. We do this by performing some sanity checks: 
