@@ -53,6 +53,13 @@ make
 # Install the library:
 make install
 
+# Move misplaced headers
+cp -a  /tools/x86_64-lfs-linux-gnu/include/c++/15.2.0/x86_64-lfs-linux-gnu/bits/* \
+       /tools/x86_64-lfs-linux-gnu/include/c++/15.2.0/bits
+cp -a  /tools/x86_64-lfs-linux-gnu/include/c++/15.2.0/x86_64-lfs-linux-gnu/ext/* \
+       /tools/x86_64-lfs-linux-gnu/include/c++/15.2.0/ext
+rm -rf /tools/x86_64-lfs-linux-gnu/include/c++/15.2.0/x86_64-lfs-linux-gnu
+
 # Remove the libtool archive files because they are harmful for 
 # cross-compilation:
 rm -v /tools/lib{,32}/lib{stdc++{,exp,fs},supc++}.la
