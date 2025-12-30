@@ -13,7 +13,25 @@ mv -v gmp-6.3.0 gmp
 tar -xf ../pkgs/mpc-1.3.1.tar.gz
 mv -v mpc-1.3.1 mpc
 
-# Change the default directory name for libraries: 
+# The following command will change the location of GCC's 
+# default dynamic linker to use the one installed in /tools. 
+# It also removes /usr/include from GCC's include search path. 
+# Issue: 
+for file in gcc/config/{linux,i386/linux{,64}}.h
+do
+  cp -uv $file{,.orig}
+  sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
+      -e 's@/usr@/tools@g' $file.orig > $file
+  echo '
+#undef STANDARD_STARTFILE_PREFIX_1
+#undef STANDARD_STARTFILE_PREFIX_2
+#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
+#define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
+  touch $file.orig
+done
+
+# Set the default directory name for 64-bit libraries to “lib”
+# with 32-bit libraries to "lib32"
 sed -e '/m64=/s/lib64/lib/' \
     -e '/m32=/s/m32=.*/m32=..\/lib32$(call if_multiarch,:i386-linux-gnu)/' \
     -i.orig gcc/config/i386/t-linux64
@@ -34,6 +52,8 @@ export CARGS+="--with-glibc-version=2.42 "
 export CARGS+="--with-sysroot=$LFS "
 export CARGS+="--with-newlib "
 export CARGS+="--without-headers "
+export CARGS+="--with-local-prefix=/tools "
+export CARGS+="--with-native-system-header-dir=/tools/include "
 export CARGS+="--enable-default-pie "
 export CARGS+="--enable-default-ssp " 
 export CARGS+="--enable-initfini-array "
