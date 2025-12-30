@@ -1,26 +1,19 @@
-# Create a limited directory hierarchy, so that the programs compiled in later 
-# (as well as glibc and libstdc++) can be installed in their final location. 
+# All programs compiled in '1-Tools' will be installed under $LFS/tools to keep 
+# them separate from the programs compiled in 2-Chroot. The programs compiled 
+# here are temporary tools and will not be a part of the final LFS system. By 
+# keeping these programs in a separate directory, they can easily be discarded 
+# later after their use. This also prevents these programs from ending up in 
+# the host production directories (easy to do by accident in 1-Tools'). 
 
-# Create the required directory layout by issuing the following commands as root: 
-mkdir -pv $LFS/{etc,var} $LFS/usr/{bin,lib,sbin}
+# Create the required directory by running the following as root:
+mkdir -v $LFS/tools
 
-for i in bin lib sbin; do
-  ln -sv usr/$i $LFS/$i
-done
+# The next step is to create a /tools symlink on the host system. This will 
+# point to the newly-created directory on the LFS partition. Run this command 
+# as root as well:
+ln -sv $LFS/tools /
 
-case $(uname -m) in
-  x86_64) mkdir -pv $LFS/lib64 ;;
-esac
-
-mkdir -pv $LFS/usr/lib{,x}32
-ln -sv usr/lib32 $LFS/lib32
-ln -sv usr/libx32 $LFS/libx32
-
-# A cross-compiler will be installed in a special directory, to separate it from 
-# the other programs. Still acting as root, create that directory with this command: 
-mkdir -pv $LFS/tools
-
-# NOTE: A /usr/lib64 directory will not be used. If for any reason this directory 
-# appears (either because you made an error in following the instructions, or 
-# because you installed a binary package that created it after finishing LFS), it 
-# may break your system. You should always be sure this directory does not exist.
+# The created symlink enables the toolchain to be compiled so that it always 
+# refers to /tools, meaning that the compiler, assembler, and linker will work 
+# both in '1-Tools' (when we are still using some tools from the host) and in 
+# the next (when we are “chrooted” to the LFS partition).  

@@ -15,14 +15,9 @@ useradd -s /bin/bash -g lfs -m -k /dev/null lfs
 # user to have a password), give lfs a password:
 passwd lfs
 
-# Grant lfs full access to toolchain directories by 
+# Grant lfs full access to toolchain directory by 
 # making lfs the directory owner:
-chown -v lfs $LFS/{usr{,/*},var,etc,tools}
-
-case $(uname -m) in
-  x86_64) chown -v lfs $LFS/lib64 ;;
-esac
-chown -v lfs $LFS/{lib32,libx32}
+chown -v lfs $LFS/tools
 
 # If a separate working directory was created as 
 # suggested, give user lfs ownership of this directory:
