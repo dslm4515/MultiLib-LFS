@@ -40,7 +40,11 @@ CXX="$LFS_TGT-g++ -m32" \
 make
 
 # Install
-make install
+make DESTDIR=$PWD/DESTDIR install
+cp -a DESTDIR/tools/lib32/* /tools/lib32/
+mkdir -pv /tools/include/gnu
+install -vm644 DESTDIR/tools/include/gnu/{lib-names,stubs}-32.h \
+        /tools/include/gnu/
 ln -svf ../lib32/ld-linux.so.2 /tools/lib/ld-linux.so.2
 
 # Create a dedicated 64-bit build directory
@@ -102,8 +106,8 @@ grep -E -o "\/tools\/lib.*/S?crt[1in].*succeeded" dummy.log
 # /tools/lib/../lib32/crtn.o succeeded
 
 #  Verify that the compiler is searching for the correct header files: 
-grep -B3 "search starts here" dummy64.log
-grep -B3 "search starts here" dummy.log
+grep -A4 "search starts here" dummy64.log
+grep -A4 "search starts here" dummy.log
 
 # These commands should return the same following output: 
 # #include "..." search starts here:
@@ -116,8 +120,8 @@ grep -B3 "search starts here" dummy.log
 
 # Next, verify that the new linker is being used with the correct 
 # search paths:
-grep 'SEARCH.*/usr/lib' dummy64.log |sed 's|; |\n|g'
-grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+grep 'SEARCH.*/tools/lib' dummy64.log |sed 's|; |\n|g'
+grep 'SEARCH.*/tools/lib' dummy.log |sed 's|; |\n|g'
 
 # These commands should return the same 3rd & 4th lines
 # SEARCH_DIR("=/tools/x86_64-lfs-linux-gnu/lib64")
