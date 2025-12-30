@@ -47,7 +47,7 @@ cd       build
 
 # Set the build options
 export  CARGS="--target=$LFS_TGT "
-export CARGS+="--prefix=$LFS/tools "
+export CARGS+="--prefix=/tools "
 export CARGS+="--with-glibc-version=2.42 "
 export CARGS+="--with-sysroot=$LFS "
 export CARGS+="--with-newlib "
