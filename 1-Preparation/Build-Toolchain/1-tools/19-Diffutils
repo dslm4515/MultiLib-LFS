@@ -1,0 +1,31 @@
+# Tools: Diffutils
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=$LFS_TGT "
+export CARGS+="--build=$(./build-aux/config.guess) "
+
+# NOTE: The configure script requires running a compiled C 
+# program, and this is impossible during cross-compilation 
+# because in general a cross-compiled program cannot run 
+# on the host distro. Normally for such a check the 
+# configure script would use a fall-back value for 
+# cross-compilation, but the fall-back value for this 
+# check is absent and the configure script would have no 
+# value to use and error out. The upstream has already 
+# fixed the issue, but to apply the fix we'd need to run 
+# autoconf that the host distro may lack. So we just 
+# specify the check result (y as we know the strcasecmp 
+# function in Glibc-2.42 works fine) instead, then 
+# configure will just use the specified value and skip the check.
+export CARGS+="gl_cv_func_strcasecmp_works=y "
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install

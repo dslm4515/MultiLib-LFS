@@ -1,0 +1,11 @@
+# Tools: Gettext
+# Build & install as LFS
+
+# Prepare for compilation:
+./configure --disable-shared
+
+# Compile the package: 
+make
+
+# Install the msgfmt, msgmerge, and xgettext programs: 
+cp -v gettext-tools/src/{msgfmt,msgmerge,xgettext} /tools/bin

@@ -1,0 +1,21 @@
+# Tools: Xz Utils
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=$LFS_TGT "
+export CARGS+="--build=$(build-aux/config.guess) "
+export CARGS+="--docdir=/tools/share/doc/xz-5.8.1 "
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install
+
+# Remove the libtool archive file because it is harmful 
+# for cross compilation:
+rm -v /tools/lib/liblzma.la

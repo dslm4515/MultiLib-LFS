@@ -1,0 +1,15 @@
+# Tools: Gzip
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=$LFS_TGT "
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install

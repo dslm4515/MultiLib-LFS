@@ -1,0 +1,16 @@
+# Tools: Make
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=$LFS_TGT "
+export CARGS+="--build=$(build-aux/config.guess) "
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install

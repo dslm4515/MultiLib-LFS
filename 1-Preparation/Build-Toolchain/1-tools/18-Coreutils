@@ -1,0 +1,18 @@
+# Tools: Coreutils
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=$LFS_TGT "
+export CARGS+="--build=$(build-aux/config.guess) "
+export CARGS+="--enable-install-program=hostname "
+export CARGS+="--enable-no-install-program=kill,uptime " 
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install
