@@ -1,0 +1,15 @@
+# Tools: Bison
+# Build & install as LFS
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--docdir=/tools/share/doc/bison-3.8.2 "
+
+# Prepare for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package:
+make install
