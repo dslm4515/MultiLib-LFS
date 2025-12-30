@@ -1,0 +1,93 @@
+# Tools: Ncurses
+# Build & install as LFS
+
+# First, run the following commands to build the tic program on 
+# the build host. We install it in $LFS/tools, so that it is 
+# found in the PATH when needed:
+mkdir build
+pushd build
+  ../configure --prefix=/tools AWK=gawk
+  make -C include
+  make -C progs tic
+  install progs/tic /tools/bin
+popd
+
+# Set build options for 32-bit
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=${LFS_TGT32} "
+export CARGS+="--build=$(./config.guess) "
+export CARGS+="--mandir=/tools/share/man "
+export CARGS+="--libdir=/tools/lib32 "
+export CARGS+="--enable-overwrite "
+export CARGS+="--with-manpage-format=normal "
+export CARGS+="--with-shared "
+export CARGS+="--without-normal "
+export CARGS+="--with-cxx-shared  "
+export CARGS+="--without-debug "
+export CARGS+="--without-ada "
+export CARGS+="--disable-stripping "
+export CARGS+="AWK=gawk " 
+
+# Prepare for 32-bit compilation:
+CC="$LFS_TGT-gcc -m32"  \
+CXX="$LFS_TGT-g++ -m32" \
+./configure $CARGS
+
+# Compile the 32-bit package: 
+make
+
+# Install the 32-bit package:
+make DESTDIR=$PWD/DESTDIR TIC_PATH=$(pwd)/build/progs/tic install
+
+# The libncurses.so library is needed by a few packages we 
+# will build soon. We create this symlink to use 
+# libncursesw.so as a replacement. 
+ln -sv libncursesw.so DESTDIR/tools/lib32/libncurses.so
+
+cp -Rv DESTDIR/tools/lib32/* /tools/lib32
+rm -rf DESTDIR
+
+# Clean for 64-bit build
+make clean
+
+# Set build options for 64-bit
+export  CARGS="--prefix=/tools "
+export CARGS+="--host=${LFS_TGT} "
+export CARGS+="--build=$(./config.guess) "
+export CARGS+="--mandir=/tools/share/man "
+export CARGS+="--enable-overwrite "
+export CARGS+="--with-manpage-format=normal "
+export CARGS+="--with-shared "
+export CARGS+="--without-normal "
+export CARGS+="--with-cxx-shared  "
+export CARGS+="--without-debug "
+export CARGS+="--without-ada "
+export CARGS+="--disable-stripping "
+export CARGS+="AWK=gawk "
+
+# Prepare for 64-bit compilation:
+./configure $CARGS
+
+# Compile the 64-bit package: 
+make
+
+# Install the 64-bit package:
+make install
+
+# Just like for the 32-bit version, the libncurses.so 
+# library is needed by a few packages we will build 
+# soon. We create this symlink to use libncursesw.so 
+# as a replacement. 
+ln -sv libncursesw.so /tools/lib/libncurses.so
+
+# The header file curses.h contains the definition of various 
+# Ncurses data structures. With different preprocessor macro 
+# definitions two different sets of the data structure 
+# definition may be used: the 8-bit definition is compatible 
+# with libncurses.so and the wide-character definition is 
+# compatible with libncursesw.so. Since we are using 
+# libncursesw.so as a replacement of libncurses.so, edit the 
+# header file so it will always use the wide-character data 
+# structure definition compatible with libncursesw.so.
+sed -e 's/^#if.*XOPEN.*$/#if 1/' \
+    -i /tools/include/curses.h
