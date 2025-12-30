@@ -60,6 +60,8 @@ Run 'check-version.sh'. Otherwise:
 
 # Build Method
 
+Using the same build method from LFS-9.0 creates a reusable toolchain that is independant of the host and simplifies the process of creating packages to use with a package manager for the final system.
+
 ## Build Toolchain
 
 Entire build will build all packages from source. There are 2 stages, based off LFS-9.0:
