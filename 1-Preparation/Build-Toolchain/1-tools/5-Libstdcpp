@@ -5,27 +5,54 @@
 # unpack the GCC tarball and change to the gcc-15.2.0 directory.
 
 # Create a separate build directory for Libstdc++ and enter it: 
-mkdir -v build
-cd       build
+mkdir -v build32
+cd       build32
 
 # Set the build options
-export  CARGS="--host=$LFS_TGT "
+export  CARGS="--host=$LFS_TGT32 "
 export CARGS+="--build=$(../config.guess) "
-export CARGS+="--prefix=/usr "
-export CARGS+="--enable-multilib "
+export CARGS+="--prefix=/tools "
+export CARGS+="--libdir=/tools/lib32 "
+export CARGS+="--disable-multilib "
 export CARGS+="--disable-nls "
 export CARGS+="--disable-libstdcxx-pch "
+export CARGS+="--disable-libstdcxx-threads "
 export CARGS+="--with-gxx-include-dir=/tools/$LFS_TGT/include/c++/15.2.0 "
 
 # Configure the source
+CC="$LFS_TGT-gcc -m32"  \
+CXX="$LFS_TGT-g++ -m32" \
 ../libstdc++-v3/configure $CARGS
 
 # Compile 
 make 
 
 # Install the library:
-make DESTDIR=$LFS install
+make install
+
+# Create a dedicated 64-bit build directory
+mkdir -v ../build
+cd ../build
+
+# Set the build options
+export  CARGS="--host=$LFS_TGT "
+export CARGS+="--build=$(../config.guess) "
+export CARGS+="--prefix=/tools "
+export CARGS+="--disable-multilib "
+export CARGS+="--disable-nls "
+export CARGS+="--disable-libstdcxx-pch "
+export CARGS+="--disable-libstdcxx-threads "
+export CARGS+="--with-gxx-include-dir=/tools/$LFS_TGT/include/c++/15.2.0 "
+
+# Configure the source
+../libstdc++-v3/configure $CARGS
+
+# Compile
+make
+
+# Install the library:
+make install
 
 # Remove the libtool archive files because they are harmful for 
 # cross-compilation:
-rm -v $LFS/usr/lib/lib{stdc++{,exp,fs},supc++}.la
+rm -v /tools/lib{,32}/lib{stdc++{,exp,fs},supc++}.la
