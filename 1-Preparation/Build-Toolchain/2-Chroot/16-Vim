@@ -1,0 +1,18 @@
+# Chroot: Toolchain - Vim (optional)
+# This section is done in Chroot environment
+
+# NOTE: This package is optional
+
+# First, change the default location of the vimrc configuration 
+# file to /tools/etc:
+echo '#define SYS_VIMRC_FILE "/tools/etc/vimrc"' >> src/feature.h
+
+# Configure source
+./configure --prefix=/tools
+
+# Compile
+make
+
+# Install to toolchain
+make install
+

@@ -1,0 +1,20 @@
+# Chroot: Toolchain - Dejagnu (optional)
+# This section is done in Chroot environment
+
+# NOTE: This package is optional - Used for running
+# testsuites.
+
+# The upstream recommends building DejaGNU in a dedicated 
+# build directory:
+mkdir -v build
+cd       build
+
+# Configure source
+../configure --prefix=/tools
+
+# Compile
+make
+
+# Install to toolchain
+make install
+

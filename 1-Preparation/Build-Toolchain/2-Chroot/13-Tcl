@@ -1,0 +1,31 @@
+# Chroot: Toolchain - Tcl (optional)
+# This section is done in Chroot environment
+
+# NOTE: This package is optional - Used for running
+# testsuites.
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--mandir=/tools/share/man "
+export CARGS+="--disable-rpath "
+
+# Configure source
+cd unix
+./configure $CARGS
+
+# Compile
+make
+
+# Install to toolchain
+make install
+chmod 644 /tools/lib/libtclstub8.6.a
+
+# Make the installed library writable so debugging symbols can be removed later
+chmod -v u+w /tools/lib/libtcl8.6.so
+
+# Install Tcl's headers. The next package, Expect, requires them.
+make install-private-headers
+
+# Now make a necessary symbolic link:
+ln -sfv tclsh8.6 /tools/bin/tclsh
+

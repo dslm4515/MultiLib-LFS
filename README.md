@@ -8,7 +8,7 @@ The aim of this project is to create a unix-like system using Glibc with support
 
 # Goals:
 <ul>
-<li> [ ] Create Toolchain to produce a multilib system</li>
+<li> [x] Create Toolchain to produce a multilib system</li>
 <li> [ ] Expand documentation to avoid referencing LFS book</li>
 <li> [ ] Support hosts that do not use glibc</li>
 <li> [ ] Add doucmentation on updating toolchain from previous build</li>

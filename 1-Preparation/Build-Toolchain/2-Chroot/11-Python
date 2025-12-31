@@ -1,0 +1,17 @@
+# Chroot: Toolchain - Python
+# This section is done in Chroot environment
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--enable-shared "
+export CARGS+="--with-ensurepip=yes "
+export CARGS+="--without-static-libpython "
+
+# Configure source
+./configure $CARGS
+
+# Compile
+make
+
+# Install to toolchain
+make install

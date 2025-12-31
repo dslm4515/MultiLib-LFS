@@ -1,0 +1,17 @@
+# Chroot: Toolchain - Zlib-ng
+# This section is done in Chroot environment
+
+# NOTE: Required by python for the pip utility
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--zlib-compat "
+
+# Configure source
+./configure $CARGS
+
+# Compile
+make
+
+# Install to toolchain
+make install
