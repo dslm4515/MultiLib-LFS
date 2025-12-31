@@ -29,8 +29,3 @@ chown -R root:root $LFS/tools
 # How best to backup $LFS/tools is a matter of personal 
 # preference.
 
-# NOTE: If you intend to keep the temporary tools for 
-# use in building future LFS systems, now is the time 
-# to back them up. Subsequent commands in chapter 6 
-# will alter the tools currently in place, rendering 
-# them useless for future builds.  
