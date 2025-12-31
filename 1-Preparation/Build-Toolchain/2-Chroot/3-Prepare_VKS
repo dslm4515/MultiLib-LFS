@@ -1,0 +1,60 @@
+# Chroot: Preparing Virtual Kernel File Systems
+# Run as root or super user
+
+# Applications running in userspace utilize various file systems 
+# created by the kernel to communicate with the kernel itself. 
+# These file systems are virtual: no disk space is used for 
+# them. The content of these file systems resides in memory. 
+# These file systems must be mounted in the $LFS directory 
+# tree so the applications can find them in the chroot environment
+
+# Begin by creating the directories on which these virtual file 
+# systems will be mounted:
+mkdir -pv $LFS/{dev,proc,sys,run}
+
+# Mounting and Populating /dev
+
+# During a normal boot of an LFS system, the kernel 
+# automatically mounts the devtmpfs file system on the 
+# /dev directory; the kernel creates device nodes on that 
+# virtual file system during the boot process, or when a 
+# device is first detected or accessed. The udev daemon may 
+# change the ownership or permissions of the device nodes 
+# created by the kernel, and create new device nodes or 
+# symlinks, to ease the work of distro maintainers and 
+# system administrators. If the host kernel supports devtmpfs, 
+# we can simply mount a devtmpfs at $LFS/dev and rely on the 
+# kernel to populate it.
+
+# But some host kernels lack devtmpfs support; these host 
+# distros use different methods to create the content of /dev. 
+# So the only host-agnostic way to populate the $LFS/dev directory 
+# is by bind mounting the host system's /dev directory. A bind 
+# mount is a special type of mount that makes a directory 
+# subtree or a file visible at some other location. Use the 
+# following command to do this.
+mount -v --bind /dev $LFS/dev
+
+# Mounting Virtual Kernel File Systems
+
+# Now mount the remaining virtual kernel file systems: 
+mount -vt devpts devpts -o gid=5,mode=0620 $LFS/dev/pts
+mount -vt proc proc $LFS/proc
+mount -vt sysfs sysfs $LFS/sys
+mount -vt tmpfs tmpfs $LFS/run
+
+# In some host systems, /dev/shm is a symbolic link to a 
+# directory, typically /run/shm. The /run tmpfs was mounted 
+# above so in this case only a directory needs to be created 
+# with the correct permissions.
+
+# In other host systems /dev/shm is a mount point for a tmpfs. 
+# In that case the mount of /dev above will only create 
+# /dev/shm as a directory in the chroot environment. 
+# In this situation we must explicitly mount a tmpfs: 
+if [ -h $LFS/dev/shm ]; then
+  install -v -d -m 1777 $LFS$(realpath /dev/shm)
+else
+  mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
+fi
+  

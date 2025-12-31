@@ -1,0 +1,41 @@
+# Chroot: Entering the Chroot Environment 
+# Run as root or super user
+
+# Now that all the packages which are required to build the 
+# rest of the needed tools are on the system, it is time to 
+# enter the chroot environment and finish installing the 
+# temporary tools. This environment will also be used to 
+# install the final system. As user root, run the 
+# following command to enter the environment that is, 
+# at the moment, populated with nothing but temporary tools:
+chroot "$LFS" /tools/bin/env -i   \
+    HOME=/root                    \
+    TERM="$TERM"                  \
+    PS1='(lfs chroot) \u:\w\$ '          \
+    PATH=/usr/bin:/usr/sbin:/tools/bin   \
+    /tools/bin/bash --login +h
+
+# From this point on, there is no need to use the LFS 
+# variable any more because all work will be restricted to 
+# the LFS file system; the chroot command runs the Bash 
+# shell with the root (/) directory set to $LFS. 
+
+# Notice that /tools/bin comes last in the PATH. This 
+# means that a temporary tool will no longer be used once 
+# its final version is installed. This occurs when the 
+# shell does not “remember” the locations of executed 
+# binaries—for this reason, hashing is switched off by 
+# passing the +h option to bash.
+
+# Note that the bash prompt will say "I have no name!" 
+# This is normal because the /etc/passwd file has not 
+# been created yet.
+
+# NOTE: It is important that all the commands throughout 
+# the remainder of this section and the following sections 
+# are run from within the chroot environment. If you leave 
+# this environment for any reason (rebooting for example), 
+# ensure that the virtual kernel filesystems are mounted 
+# as explained in "3-Prepare_VKS" and enter chroot again 
+# before continuing with the installation.
+ 
