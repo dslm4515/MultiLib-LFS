@@ -1,0 +1,15 @@
+# Chroot: Toolchain - Findutils
+# This section is done in Chroot environment
+
+# Set build options
+export  CARGS="--prefix=/tools "
+export CARGS+="--localstatedir=/tools/var/lib/locate "
+
+# Configure source
+./configure $CARGS
+
+# Compile
+make
+
+# Install to toolchain
+make install

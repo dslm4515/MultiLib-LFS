@@ -1,0 +1,22 @@
+# Chroot: Toolchain - Perl
+# This section is done in Chroot environment
+
+# Set build options
+export PVER="5.42"
+export  PARGS="-D prefix=/tools "
+export PARGS+="-D vendorprefix=/tools "
+export PARGS+="-D useshrplib "
+export PARGS+="-D privlib=/tools/lib/perl5/${PVER}/core_perl "
+export PARGS+="-D archlib=/tools/lib/perl5/${PVER}/core_perl "
+export PARGS+="-D sitearch=/tools/lib/perl5/${PVER}/core_perl "
+export PARGS+="-D vendorlib=/tools/lib/perl5/${PVER}/core_perl "
+export PARGS+="-D vendorarch=/tools/lib/perl5/${PVER}/core_perl "
+
+# Configure source
+sh Configure -des $PARGS
+
+# Compile
+make
+
+# Install to toolchain
+make install
