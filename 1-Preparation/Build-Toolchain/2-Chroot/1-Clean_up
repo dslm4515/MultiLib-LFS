@@ -1,0 +1,36 @@
+# Tools: Clean up
+# Run as lfs
+
+# The steps in this section are optional, but if the LFS 
+# partition is rather small, it is beneficial to learn 
+# that unnecessary items can be removed.
+
+# Remove the documentation:
+rm -rf /tools/{,share}/{info,man,doc}
+
+# Remove unneeded files:
+find /tools/{lib,lib32,libexec} -name \*.la -delete
+
+# The executables and libraries built so far contain 
+# about 1.1+ Gb of unneeded debugging symbols. 
+# Remove those symbols with:
+find /tools/bin -maxdepth 1 -type f -exec /tools/x86_64-lfs-linux-gnu/bin/strip  --strip-debug {} \;
+find /tools/lib32 -maxdepth 1 -type f -exec /tools/bin/strip --strip-debug {} \;
+
+export GCCV=$(/tools/bin/gcc --version 2>&1 | grep -E -o '[0-9]+\.[0-9\.]+[a-z]*' | head -n1)
+find /tools/libexec/gcc/${LFS_TGT}/${GCCV} -maxdepth 1 -type f -exec /tools/bin/strip --strip-debug {} \;
+
+# Avoid stripping the libraries used by the 
+# cross-compiled strip binary when stripping 
+# debug symbols in /tools/lib:
+for b in $(ls /tools/lib) 
+do
+  case $b in
+       libbfd* | libsframe* | libc.so* | ld-linux* | ld-lsb* | *.json | *.py )
+            echo "> skipped ${b} "
+       ;;
+       * )
+           echo "stripped $b " && /tools/bin/strip --strip-debug /tools/lib/$b
+       ;;
+  esac
+done
