@@ -11,7 +11,7 @@ ln -sfv ../lib/ld-linux-x86-64.so.2 /tools/lib/ld-lsb-x86-64.so.3
 # /var/db directory to store their runtime data. Apply the 
 # following patch to make such programs store their runtime 
 # data in the FHS-compliant locations: 
-patch -Np1 -i ../patches/glibc-2.42-fhs-1.patch 
+patch -Np1 -i ../patches/glibc-ml.lfs/glibc-2.42-upstream_fixes-1.patch
 
 # The Glibc documentation recommends building Glibc in a 
 # dedicated build directory:
