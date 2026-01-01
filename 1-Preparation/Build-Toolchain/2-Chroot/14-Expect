@@ -20,7 +20,7 @@ python3 -c 'from pty import spawn; spawn(["echo", "ok"])'
 # and other subtle breakages may also happen.   
 
 # Now, make some changes to allow the package with gcc-15.1 or later:
-patch -Np1 -i ../patches/expect-5.45.4-gcc15-1.patch
+patch -Np1 -i ../patches/expect-ml.lfs/expect-5.45.4-gcc15-1.patch
 
 # Set build options
 export  CARGS="--prefix=/tools "
