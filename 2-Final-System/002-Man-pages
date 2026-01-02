@@ -1,0 +1,9 @@
+# Final System - Man-pages
+# Build and install under chroot
+
+# Remove two man pages for password hashing functions. Libxcrypt 
+# will provide a better version of these man pages:
+rm -v man3/crypt*
+
+# Install Man-pages by running:
+make -R GIT=false prefix=/usr install

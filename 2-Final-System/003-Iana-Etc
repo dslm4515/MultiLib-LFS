@@ -1,0 +1,6 @@
+# Final System - Iana-Etc
+# Build and install under  chroot
+
+# For this package, we only need to copy the files into place:
+cp -v services protocols /etc
+
