@@ -1,0 +1,48 @@
+# Final System - Zlib-ng
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--libdir=/usr/lib "
+export CARGS+="--zlib-compat "
+export CARGS+="--sharedlibdir=/usr/lib "
+
+# Prepare Zlib-ng for compilation:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+# Remove a useless static library: 
+rm -fv /usr/lib/libz.a
+
+## Zlib 32-bit
+
+# Clean previous build:  
+make distclean
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--zlib-compat "
+export CARGS+="--sharedlibdir=/usr/lib32 "
+export CARGS+="--32 "
+
+# Prepare Zlib for compilation: 
+CFLAGS+=" -m32" CXXFLAGS+=" -m32" \
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+
