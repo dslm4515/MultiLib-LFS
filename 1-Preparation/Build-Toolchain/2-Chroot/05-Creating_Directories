@@ -20,6 +20,7 @@ mkdir -pv /usr/lib/firmware
 ln -sv usr/bin   /bin
 ln -sv usr/sbin  /sbin
 ln -sv usr/lib   /lib
+ln -sv usr/lib   /lib64
 ln -sv usr/lib32 /lib32
 ln -sv /run      /var/run
 ln -sv /run/lock /var/lock
