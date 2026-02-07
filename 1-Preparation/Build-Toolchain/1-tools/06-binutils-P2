@@ -35,4 +35,9 @@ make install
 # later on:
 make -C ld clean
 make -C ld LIB_PATH=/usr/lib:/lib:/usr/lib32:/lib32
-cp -v ld/ld-new /tools/bin
+
+# The new linker isn't assembled until installed.
+# Install in a temporary directory and only copy
+# the new linker for later
+make DESTDIR=$PWD/DESTDIR install
+cp -v DESTDIR/tools/bin/ld /tools/bin/ld-new
