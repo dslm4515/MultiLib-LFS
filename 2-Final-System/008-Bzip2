@@ -1,0 +1,61 @@
+# Final System - Bzip2
+# Build and install under chroot
+
+# Apply a patch that will install the documentation for this package: 
+patch -Np1 -i  ../patches/bzip2-ml.lfs/bzip2-1.0.8-install_docs-1.patch
+
+# The following command ensures installation of symbolic links are 
+# relative: 
+sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+
+# Ensure the man pages are installed into the correct location: 
+sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+
+# Prepare Bzip2 for compilation with: 
+make -f Makefile-libbz2_so
+make clean
+
+# Compile and test the package: 
+make
+
+# Install the programs:
+make PREFIX=/usr install
+
+# Install the shared library: 
+cp -av libbz2.so.* /usr/lib
+ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
+
+# The name of the shared library isn't standardized and it varies among 
+# distros. The instruction above has installed libbz2.so.1.0, but some 
+# applications, for example Kbd, expects a different name libbz2.so.1 
+# that some other distros are using. Create a compatibility symlink for 
+# them: 
+ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so.1
+
+# Install the shared bzip2 binary into the /usr/bin directory, and 
+# replace two copies of bzip2 with symlinks: 
+cp -v bzip2-shared /usr/bin/bzip2
+for i in /usr/bin/{bzcat,bunzip2}; do
+  ln -sfv bzip2 $i
+done
+
+# Remove a useless static library: 
+rm -fv /usr/lib/libbz2.a
+
+### 32-bit Bzip2
+
+# Clean previous build: 
+make clean
+make -f Makefile-libbz2_so clean
+
+# Compile the package: 
+sed -e "s/^CC=.*/CC=gcc -m32/" -i Makefile{,-libbz2_so}
+make -f Makefile-libbz2_so
+
+# Install the package:
+install -Dm755 libbz2.so.1.0.8 /usr/lib32/libbz2.so.1.0.8
+ln -sf libbz2.so.1.0.8 /usr/lib32/libbz2.so
+ln -sf libbz2.so.1.0.8 /usr/lib32/libbz2.so.1
+ln -sf libbz2.so.1.0.8 /usr/lib32/libbz2.so.1.0
+
+
