@@ -1,0 +1,36 @@
+# Final System - Xz
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/xz-5.8.2 "
+
+# Prepare Xz for compilation with:
+./configure $CARGS
+
+# Compile the package: 
+make
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+## 32-bit Xz
+
+# Set build options for 32-bit
+export CARGS+="--host=i686-pc-linux-gnu "
+export CARGS+="--libdir=/usr/lib32 "
+
+# Prepare Xz for compilation:
+CC="gcc -m32" ./configure $CARGS
+
+# Compile the package:
+make 
+
+# Install the 32-bit libraries: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
