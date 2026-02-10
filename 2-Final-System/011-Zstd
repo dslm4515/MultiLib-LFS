@@ -1,0 +1,25 @@
+# Final System - zstd
+# Build and install under chroot
+
+# Compile the package: 
+make prefix=/usr
+
+# To test the results, issue: 
+make check
+
+# Install the package:
+make prefix=/usr install
+
+## 32-bit zstd libraries
+
+# Clean previous build: 
+make clean
+
+# Compile the package: 
+CC="gcc -m32" make prefix=/usr
+
+# Install 32-bit libraries
+make prefix=/usr DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib/* /usr/lib32/
+sed -e "/^libdir/s/lib$/lib32/" -i /usr/lib32/pkgconfig/libzstd.pc
+rm -rf DESTDIR
