@@ -1,0 +1,35 @@
+# Final System - file
+# Build and install under chroot
+
+# Prepare File for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+### 32-bit build
+
+# Clean previous build:
+make distclean
+
+# Set 32-bit build options
+export  CARGS="--libdir=/usr/lib32 "
+export CARGS+="--host=i686-pc-linux-gnu "
+
+# Prepare File for 32-bit compilation:
+CC="gcc -m32" ./configure  --prefix=/usr $CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

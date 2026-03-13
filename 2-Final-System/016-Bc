@@ -1,0 +1,15 @@
+# Final System - Bc
+# Build and install under chroot
+
+# Prepare Bc for compilation: 
+CC='gcc -std=c99' ./configure --prefix=/usr -G -O3 -r
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make test 
+
+# Install the package: 
+make install
+

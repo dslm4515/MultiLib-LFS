@@ -1,0 +1,27 @@
+# Final System - Flex
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/flex-2.6.4 "
+
+# Prepare flex for compilation: 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+# A few programs do not know about flex yet and try to run its 
+# predecessor, lex. To support those programs, create a 
+# symbolic link named lex that runs flex in lex emulation mode, 
+# and also create the man page of lex as a symlink: 
+ln -sv flex   /usr/bin/lex
+ln -sv flex.1 /usr/share/man/man1/lex.1
+

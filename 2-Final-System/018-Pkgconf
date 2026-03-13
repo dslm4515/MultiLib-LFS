@@ -1,0 +1,51 @@
+# Final System - Pkgconf
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/pkgconf-2.5.1 "
+
+# Prepare pkgconf for compilation: 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# Install the package: 
+make install
+
+# To maintain compatibility with the original Pkg-config 
+# create two symlinks: 
+ln -sv pkgconf   /usr/bin/pkg-config
+ln -sv pkgconf.1 /usr/share/man/man1/pkg-config.1
+
+# When targetting the 32-bit architectures on 64-bit, some 
+# packages will use Pkg-config in a way that will pull in 
+# libraries that have only been built for 64-bit. This 
+# spirals into linker or other errors. This can be fixed 
+# by creating Pkg-config personalities which can then be 
+# used to override default Pkg-config behavior. Create 
+# them now:
+ln -sv pkgconf /usr/bin/i686-pc-linux-gnu-pkg-config
+ln -sv pkgconf /usr/bin/x86_64-pc-linux-gnu-pkg-config
+
+mkdir -pv /usr/share/pkgconfig/personality.d
+
+cat > /usr/share/pkgconfig/personality.d/i686-pc-linux-gnu.personality << EOF
+Triplet: i686-pc-linux-gnu
+SysrootDir: /
+DefaultSearchPaths: /usr/lib32/pkgconfig:/usr/share/pkgconfig
+SystemIncludePaths: /usr/include
+SystemLibraryPaths: /usr/lib32
+EOF
+
+cat > /usr/share/pkgconfig/personality.d/x86_64-pc-linux-gnu.personality << EOF
+Triplet: x86_64-pc-linux-gnu
+SysrootDir: /
+DefaultSearchPaths: /usr/lib/pkgconfig:/usr/share/pkgconfig
+SystemIncludePaths: /usr/include
+SystemLibraryPaths: /usr/lib
+EOF
+
+ 

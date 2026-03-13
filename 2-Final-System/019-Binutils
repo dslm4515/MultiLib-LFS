@@ -1,0 +1,37 @@
+# Final System - Binutils
+# Build and install under chroot
+
+# The Binutils documentation recommends building Binutils in 
+# a dedicated build directory: 
+mkdir -v build
+cd       build
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--sysconfdir=/etc "
+export CARGS+="--enable-ld=default "
+export CARGS+="--enable-plugins "
+export CARGS+="--enable-shared "
+export CARGS+="--disable-werror "
+export CARGS+="--enable-64-bit-bfd "
+export CARGS+="--enable-new-dtags "
+export CARGS+="--with-system-zlib "
+export CARGS+="--enable-default-hash-style=gnu "
+
+# Prepare binutils for compilation: 
+../configure $CARGS
+
+# Compile the package:
+make tooldir=/usr
+
+# Test the results: 
+make -k check
+
+# For a list of failed tests, run: 
+grep '^FAIL:' $(find -name '*.log')
+# NOTE: One test related to gprofng is known to fail.
+
+# Install the package: 
+make tooldir=/usr install
+
+ 

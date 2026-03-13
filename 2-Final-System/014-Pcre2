@@ -1,0 +1,51 @@
+# Final System - Pcre2
+# Build and install under chroot
+
+# Ncurses not installed yet, but required by readline:
+ln -sv   /tools/lib/libncursesw.so.6   /usr/lib/libncursesw.so.6
+ln -sv   /tools/lib32/libncursesw.so.6 /usr/lib32/libncursesw.so.6
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--docdir=/usr/share/doc/pcre2-10.47 "
+export CARGS+="--enable-unicode "
+export CARGS+="--enable-jit "
+export CARGS+="--enable-pcre2-16 "
+export CARGS+="--enable-pcre2-32 "
+export CARGS+="--enable-pcre2grep-libz "
+export CARGS+="--enable-pcre2grep-libbz2 "
+export CARGS+="--enable-pcre2test-libreadline "
+export CARGS+="--disable-static "
+
+# Prepare pcre2 for 64-bit compilation: 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+### 32-bit build
+
+# Clean previous build:
+make distclean
+
+# Add 32-bit build options
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--host=i686-pc-linux-gnu "
+
+# Prepare pcre2 for 32-bit compilation:
+CC="gcc -m32" CXX="g++ -m32" ./configure $CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+
