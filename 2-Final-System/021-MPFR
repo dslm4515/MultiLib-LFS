@@ -1,0 +1,21 @@
+# Final System - MPFR
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--enable-thread-safe "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/mpfr-4.2.2" 
+
+# Prepare MPFR for compilation: 
+./configure $CARGS
+
+# Compile the package:
+make
+
+# Test the results: 
+make check 
+
+# Install the package: 
+make install
+

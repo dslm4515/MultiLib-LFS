@@ -1,0 +1,38 @@
+# Final System - Attr
+# Build and install under chroot
+
+# Set the build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--sysconfdir=/etc "
+export CARGS+="--docdir=/usr/share/doc/attr-2.5.2 "
+
+# Prepare attr for 64-bit compilation: 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# Install the package: 
+make install
+
+### 32-bit build
+
+# Clean previous build:
+make distclean
+
+# Add 32-bit build options
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--host=i686-pc-linux-gnu "
+
+# Prepare attr for 32-bit compilation:
+CC="gcc -m32" ./configure $CARGS
+
+# Compile the package:
+make 
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

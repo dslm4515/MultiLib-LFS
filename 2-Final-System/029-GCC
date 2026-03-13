@@ -1,0 +1,170 @@
+# Final System - GCC
+# Build and install under chroot
+
+# First, make a fix required by glibc-2.43 and later: 
+sed -i 's/char [*]q/const &/' libgomp/affinity-fmt.c
+
+# Change the default directory name for 64-bit libraries to “lib”: 
+sed -e '/m64=/s/lib64/lib/' \
+    -e '/m32=/s/m32=.*/m32=..\/lib32$(call if_multiarch,:i386-linux-gnu)/' \
+    -i.orig gcc/config/i386/t-linux64
+
+# Make -mstackrealign a default for 32-bit objects: 
+sed '/STACK_REALIGN_DEFAULT/s/0/(!TARGET_64BIT \&\& TARGET_SSE)/' \
+      -i gcc/config/i386/i386.h
+
+# The GCC documentation recommends building GCC in a dedicated build 
+# directory:
+mkdir -v build
+cd       build 
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--enable-languages=c,c++ "
+export CARGS+="--enable-default-pie "
+export CARGS+="--enable-default-ssp "
+export CARGS+="--enable-host-pie "
+export CARGS+="--enable-multilib "
+export CARGS+="--with-multilib-list=m64,m32 "
+export CARGS+="--disable-bootstrap "
+export CARGS+="--disable-fixincludes "
+export CARGS+="--with-system-zlib "  
+
+# Prepare GCC for compilation: 
+../configure $CARGS LD=ld
+
+# Compile the package:
+make
+
+# GCC may need more stack space compiling some extremely complex code 
+# patterns. As a precaution for the host distros with a tight stack 
+# limit, explicitly set the stack size hard limit to infinite. On most 
+# host distros (and the final LFS system) the hard limit is infinite by 
+# default, but there is no harm done by setting it explicitly. It's not 
+# necessary to change the stack size soft limit because GCC will 
+# automatically set it to an appropriate value, as long as the value 
+# does not exceed the hard limit: 
+ulimit -s -H unlimited
+
+# Now remove several known test failures: 
+sed -e '/cpython/d' -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
+
+# Test the results as a non-privileged user, but do not stop at errors: 
+chown -R tester .
+su tester -c "PATH=$PATH make -k check"
+
+# To extract a summary of the test suite results, run:
+../contrib/test_summary
+
+# To filter out only the summaries, pipe the output through grep -A7 Summ. 
+# Four tests related to pr90579.c are known to fail
+# Five tests related to analyzer/strchr-1.c are known to fail. 
+# Four tests in libstdc++, 17_intro/badnames.cc, 17_intro/names.cc, 
+# 17_intro/names_fortify.cc, and experimental/names.cc, are known to fail 
+# due to changes with glibc-2.43. 
+
+# A few unexpected failures cannot always be avoided. In some cases test 
+# failures depend on the specific hardware of the system. Unless the test 
+# results are vastly different from those at the above URL, it is safe to 
+# continue.
+
+# Install the package: 
+make install
+
+# The GCC build directory is owned by tester now, and the ownership of the 
+# installed header directory (and its content) is incorrect. Change the 
+# ownership to the root user and group: 
+chown -v -R root:root \
+    /usr/lib/gcc/$(gcc -dumpmachine)/15.2.0/include{,-fixed}
+
+# Create a symlink required by the FHS for "historical" reasons. 
+ln -svr /usr/bin/cpp /usr/lib
+
+# Many packages use the name cc to call the C compiler. We've already 
+# created cc as a symlink in gcc-pass2, create its man page as a symlink 
+# as well:
+ln -sv gcc.1 /usr/share/man/man1/cc.1
+
+# Add a compatibility symlink to enable building programs with Link Time 
+# Optimization (LTO):
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/15.2.0/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+
+# Now that our final toolchain is in place, it is important to again 
+# ensure that compiling and linking will work as expected. We do this by 
+# performing some sanity checks: 
+echo 'int main(){}' | gcc -x c - -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+
+# There should be no errors, and the output of the last command will be 
+# (allowing for platform-specific differences in the dynamic linker name):
+# [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+
+# Now make sure that we're set up to use the correct start files: 
+grep -E -o '/usr/lib.*/S?crt[1in].*succeeded' dummy.log
+
+# The output of the last command should be:
+# /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib/Scrt1.o succeeded
+# /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib/crti.o succeeded
+# /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/../../../../lib/crtn.o succeeded
+
+# Depending on your machine architecture, the above may differ slightly. 
+# The difference will be the name of the directory after /usr/lib/gcc. The 
+# important thing to look for here is that gcc has found all three crt*.o 
+# files under the /usr/lib directory. 
+
+# Verify that the compiler is searching for the correct header files:
+grep -B4 '^ /usr/include' dummy.log
+
+# This command should return the following output:
+# #include <...> search starts here:
+#  /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/include
+#  /usr/local/include
+#  /usr/lib/gcc/x86_64-pc-linux-gnu/15.2.0/include-fixed
+#  /usr/include
+
+# Again, the directory named after your target triplet may be different 
+# than the above, depending on your system architecture. 
+
+# Next, verify that the new linker is being used with the correct search paths: 
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+
+# References to paths that have components with '-linux-gnu' should be 
+# ignored, but otherwise the output of the last command should be: 
+# SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+# SEARCH_DIR("/usr/local/lib64")
+# SEARCH_DIR("/lib64")
+# SEARCH_DIR("/usr/lib64")
+# SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib")
+# SEARCH_DIR("/usr/local/lib")
+# SEARCH_DIR("/lib")
+# SEARCH_DIR("/usr/lib");
+
+# Next make sure that we're using the correct libc: 
+grep "/lib.*/libc.so.6 " dummy.log
+
+# The output of the last command should be: 
+# attempt to open /usr/lib/libc.so.6 succeeded
+
+# Make sure GCC is using the correct dynamic linker: 
+grep found dummy.log
+
+# The output of the last command should be (allowing for platform-specific 
+# differences in dynamic linker name): 
+# found ld-linux-x86-64.so.2 at /usr/lib/ld-linux-x86-64.so.2
+
+# If the output does not appear as shown above or is not received at all, 
+# then something is seriously wrong. Investigate and retrace the steps to 
+# find out where the problem is and correct it. Any issues should be 
+# resolved before continuing with the process. 
+
+# Once everything is working correctly, clean up the test files: 
+rm -v a.out dummy.log
+
+# Finally, move a misplaced file: 
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+
+# Create a link for cc
+ln -sv gcc /usr/bin/gcc
+

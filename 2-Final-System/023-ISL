@@ -1,0 +1,26 @@
+# Final System - ISL
+# Build and install under chroot
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/isl-0.27 "  
+
+# Prepare ISL for compilation: 
+./configure $CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make install
+
+# Install optional documentation
+install -vd /usr/share/doc/isl-0.27
+install -m644 doc/{CodingStyle,manual.pdf,SubmittingPatches,user.pod} \
+        /usr/share/doc/isl-0.27
+
+# Finally, move a misplaced file: 
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/libisl*gdb.py /usr/share/gdb/auto-load/usr/lib
+

@@ -1,0 +1,77 @@
+# Final System - Shadow
+# Build and install under chroot
+
+# Disable the installation of the groups program and its man pages, 
+# as Coreutils provides a better version. Also, prevent the 
+# installation of manual pages that were already installed by man-pages
+sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+
+# Instead of using the default crypt method, use the much more secure 
+# YESCRYPT method of password encryption, which also allows passwords 
+# longer than 8 characters. It is also necessary to change the obsolete 
+# /var/spool/mail location for user mailboxes that Shadow uses by 
+# default to the /var/mail location used currently. And, remove /bin 
+# and /sbin from the PATH, since they are simply symlinks to their 
+# counterparts in /usr.
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
+    -e 's:/var/spool/mail:/var/mail:'                   \
+    -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                  \
+    -i etc/login.defs
+
+# Set build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--with-{b,yes}crypt "
+export CARGS+="--without-libbsd "
+export CARGS+="--disable-logind "
+export CARGS+="--with-group-name-max-length=32 "  
+
+# Prepare shadow for compilation:
+touch /usr/bin/passwd 
+./configure $CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make exec_prefix=/usr install
+
+# Install optional documentation
+make -C man install-man
+
+## Configuring Shadow 
+
+# To enable shadowed passwords, run the following command: 
+pwconv
+
+# To enable shadowed group passwords, run: 
+grpconv
+
+# Shadow's default configuration for the useradd utility needs some 
+# explanation. First, the default action for the useradd utility is 
+# to create the user and a group with the same name as the user. By 
+# default the user ID (UID) and group ID (GID) numbers will begin 
+# at 1000. This means if you don't pass extra parameters to useradd, 
+# each user will be a member of a unique group on the system. If 
+# this behavior is undesirable, you'll need to pass either the -g 
+# or -N parameter to useradd, or else change the setting of 
+# USERGROUPS_ENAB in /etc/login.defs. See useradd(8) for more 
+# information. 
+
+# Second, to change the default parameters, the file 
+# /etc/default/useradd must be created and tailored to suit your 
+# particular needs. Create it with:
+mkdir -p /etc/default
+useradd -D --gid 999
+
+# if you would rather not create these files, issue the following 
+# command: 
+sed -i '/MAIL/s/yes/no/' /etc/default/useradd
+
+## Setting the Root Password 
+
+# Choose a password for user root and set it by running: 
+passwd root 
