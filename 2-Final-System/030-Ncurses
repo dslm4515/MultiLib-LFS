@@ -1,0 +1,106 @@
+# Final System - Ncurses
+# Build and install under chroot
+
+# Set the build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--mandir=/usr/share/man "
+export CARGS+="--with-shared "
+export CARGS+="--without-debug "
+export CARGS+="--without-normal "
+export CARGS+="--with-cxx-shared "
+export CARGS+="--enable-pc-files "
+export CARGS+="--with-pkg-config-libdir=/usr/lib/pkgconfig "
+
+# Prepare ncurses for 64-bit compilation: 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# This package has a test suite, but it can only be run after the package 
+# has been installed. The tests reside in the test/ directory. See the 
+# README file in that directory for further details.
+
+# The installation of this package will overwrite libncursesw.so.6.6 
+# in-place. It may crash the shell process which is using code and data 
+# from the library file. Install the package with DESTDIR, and replace the 
+# library file correctly using the --remove-destination option of cp (the 
+# header curses.h is also edited to ensure the wide-character ABI to be 
+# used as what we've done
+make DESTDIR=$PWD/dest install
+sed -e 's/^#if.*XOPEN.*$/#if 1/' \
+    -i dest/usr/include/curses.h
+cp --remove-destination -av dest/* /
+
+# Many applications still expect the linker to be able to find 
+# non-wide-character Ncurses libraries. Trick such applications into 
+# linking with wide-character libraries by means of symlinks (note that 
+# the .so links are only safe with curses.h edited to always use the 
+# wide-character ABI):
+for lib in ncurses form panel menu ; do
+    ln -sfv lib${lib}w.so /usr/lib/lib${lib}.so
+    ln -sfv ${lib}w.pc    /usr/lib/pkgconfig/${lib}.pc
+done
+
+# Finally, make sure that old applications that look for -lcurses at build 
+# time are still buildable: 
+ln -sfv libncursesw.so /usr/lib/libcurses.so
+
+# If desired, install the Ncurses documentation: 
+cp -v -R doc -T /usr/share/doc/ncurses-6.6
+
+# Note: The instructions above don't create non-wide-character Ncurses 
+# libraries since no package installed by compiling from sources would link 
+# against them at runtime. However, the only known binary-only applications 
+# that link against non-wide-character Ncurses libraries require version 5. 
+# If you must have such libraries because of some binary-only application or 
+# to be compliant with LSB, build the package again with the following commands: 
+make distclean
+./configure --prefix=/usr     \
+            --with-shared     \
+            --without-normal  \
+            --with-cxx-shared \
+            --without-debug   \
+            --without-cxx-binding \
+            --with-abi-version=5
+make sources libs
+cp -av lib/lib*.so.5* /usr/lib
+
+### 32-bit build
+
+# Clean previous build:
+make distclean
+
+# Set 32-bit build options
+export  CARGS="--prefix=/usr "
+export CARGS+="--mandir=/usr/share/man "
+export CARGS+="--with-shared "
+export CARGS+="--without-debug "
+export CARGS+="--without-normal "
+export CARGS+="--with-cxx-shared "
+export CARGS+="--enable-pc-files "
+export CARGS+="--with-pkg-config-libdir=/usr/lib32/pkgconfig "
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--libexecdir=/usr/lib32 "
+export CARGS+="--host=i686-pc-linux-gnu "
+
+# Prepare ncurses for 32-bit compilation:
+CC="gcc -m32" CXX="g++ -m32" ./configure $CARGS
+
+# Compile the package:
+make 
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+mkdir -p DESTDIR/usr/lib32/pkgconfig
+for lib in ncurses form panel menu ; do
+    rm -vf                    DESTDIR/usr/lib32/lib${lib}.so
+    echo "INPUT(-l${lib}w)" > DESTDIR/usr/lib32/lib${lib}.so
+    ln -svf ${lib}w.pc        DESTDIR/usr/lib32/pkgconfig/$lib.pc
+done
+rm -vf                     DESTDIR/usr/lib32/libcursesw.so
+echo "INPUT(-lncursesw)" > DESTDIR/usr/lib32/libcursesw.so
+ln -sfv libncurses.so      DESTDIR/usr/lib32/libcurses.so
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

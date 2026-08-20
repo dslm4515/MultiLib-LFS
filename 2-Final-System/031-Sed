@@ -1,0 +1,22 @@
+# Final System - Sed
+# Build and install under chroot
+
+# Prepare sed for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# If HTML documentation is desired, build it:
+make html
+
+# To test the results, issue: 
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+
+# Install the package: 
+make install
+
+# Install the documentation if desired:
+install -d -m755           /usr/share/doc/sed-4.9
+install -m644 doc/sed.html /usr/share/doc/sed-4.9

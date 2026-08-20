@@ -1,0 +1,19 @@
+# Final System - Grep
+# Build and install under chroot
+
+# First, remove a warning about using 
+# egrep and fgrep that makes tests on 
+# some packages fail: 
+sed -i "s/echo/#echo/" src/egrep.sh
+
+# Prepare grep for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install

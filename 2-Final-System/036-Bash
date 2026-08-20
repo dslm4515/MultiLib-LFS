@@ -1,0 +1,35 @@
+# Final System - Bash
+# Build and install under chroot
+
+# Prepare bash for 64-bit compilation:
+export  CARGS="--prefix=/usr "
+export CARGS+="--without-bash-malloc "
+export CARGS+="--with-installed-readline " 
+export CARGS+="--docdir=/usr/share/doc/bash-5.3 " 
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# To test the results, first adjust 
+# permissions: 
+chown -R tester .
+# Per LFS, The test suite of this package is designed to 
+# be run as a non-root user who owns the terminal 
+# connected to standard input. To satisfy the requirement, 
+# spawn a new pseudo terminal using Expect and run the 
+# tests as the tester user: 
+LC_ALL=C.UTF-8 su -s /usr/bin/expect tester << "EOF"
+set timeout -1
+spawn make tests
+expect eof
+lassign [wait] _ _ _ value
+exit $value
+EOF
+
+# Install the package: 
+make install
+
+# Per LFS, Run the newly compiled bash program (replacing 
+# the one that is currently being executed)
+exec /usr/bin/bash --login

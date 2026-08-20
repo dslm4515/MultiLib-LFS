@@ -1,0 +1,26 @@
+# Final System - Gettext
+# Build and install under chroot
+
+# Prepare gettext for 64-bit compilation:
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/gettext-1.0 " 
+./configure $CARGS
+unset CARGS
+
+# Fails to configure. Workaround:
+cd gettext-tools/examples
+# remove lines 518 -> 551
+sed -i '518,551d'config.status
+./config.status 
+cd -
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+chmod -v 0755 /usr/lib/preloadable_libintl.so
