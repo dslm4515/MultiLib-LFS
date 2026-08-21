@@ -1,0 +1,15 @@
+# Final System - Less
+# Build and install under chroot
+
+# Prepare sed for 64-bit compilation: 
+./configure --prefix=/usr --sysconfdir=/etc
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+

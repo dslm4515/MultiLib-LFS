@@ -1,0 +1,42 @@
+# Final System - Expat
+# Build and install under chroot
+
+# Prepare Expat for 64-bit compilation:
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/expat-2.8.3 " 
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+## 32-bit Expat
+
+# Clean the previous build but keep precompiled doc 
+# because it cannot be rebuilt in this stage of the system: 
+sed -e "/^am__append_1/ s/doc//" -i Makefile
+make distclean
+
+# Prepare Expat for 32-bit compilation:
+export  CARGS="--prefix=/usr "
+export CARGS+="--host=i686-pc-linux-gnu "
+export CARGS+="--libdir=/usr/lib32 "
+export CARGS+="--disable-static "
+CC="gcc -m32" ./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

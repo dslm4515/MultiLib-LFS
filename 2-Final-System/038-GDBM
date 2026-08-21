@@ -1,0 +1,37 @@
+# Final System - GDBM
+# Build and install under chroot
+
+# Prepare GDBM for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--enable-libgdbm-compat "
+./configure $CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+## 32-bit GDBM
+
+# Clean the previous build
+make distclean
+
+# Prepare GDBM for 32-bit compilation:
+export CARGS+="--host=i686-pc-linux-gnu "
+export CARGS+="--libdir=/usr/lib32 "
+CC="gcc -m32" CXX="g++ -m32" ./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

@@ -1,0 +1,15 @@
+# Final System - Gperf
+# Build and install under chroot
+
+# Prepare Gperf for 64-bit compilation: 
+./configure --prefix=/usr --docdir=/usr/share/doc/gperf-3.3
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
