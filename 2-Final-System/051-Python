@@ -1,0 +1,63 @@
+# Final System - Python
+# Build and install under chroot
+
+# Per LFS, apply a patch for compatibility 
+# with OpenSSL 4:
+patch -Np1 -i ../patches/python3.mlfs/Python-3.14.7-openssl_4-1.patch
+
+# Prepare Python for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--enable-shared "
+export CARGS+="--with-system-expat "
+export CARGS+="--enable-optimizations "
+export CARGS+="--without-static-libpython "
+
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue ... 
+# Per LFS, Some tests are known to occasionally hang 
+# indefinitely. So to test the results, run the test suite 
+# but set a 2-minute time limit for each test case:
+make test TESTOPTS="--timeout 120"
+
+# Install the package: 
+make install
+
+# Per LFS:
+# We use the pip3 command to install Python 3 programs and 
+# modules for all users as root in several places in this 
+# book. This conflicts with the Python developers' 
+# recommendation: to install packages into a virtual 
+# environment, or into the home directory of a regular 
+# user (by running pip3 as this user). A multi-line 
+# warning is triggered whenever pip3 is issued by the root user.
+
+# The main reason for the recommendation is to avoid conflicts 
+# with the system's package manager (dpkg, for example). 
+# LFS does not have a system-wide package manager, so this 
+# is not a problem. Also, pip3 will check for a new version 
+# of itself whenever it's run. Since domain name resolution 
+# is not yet configured in the LFS chroot environment, pip3 
+# cannot check for a new version of itself, and will produce 
+# a warning.
+
+# After we boot the LFS system and set up a network connection, 
+# a different warning will be issued, telling the user to 
+# update pip3 from a pre-built wheel on PyPI (whenever a new 
+# version is available). But LFS considers pip3 to be a part 
+# of Python 3, so it should not be updated separately. Also, 
+# an update from a pre-built wheel would deviate from our 
+# objective: to build a Linux system from source code. So 
+# the warning about a new version of pip3 should be ignored 
+# as well. If you wish, you can suppress all these warnings 
+# by running the following command, which creates a 
+# configuration file:
+cat > /etc/pip.conf << EOF
+[global]
+root-user-action = ignore
+disable-pip-version-check = true
+EOF
