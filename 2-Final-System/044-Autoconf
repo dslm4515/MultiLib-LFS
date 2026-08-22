@@ -1,0 +1,15 @@
+# Final System - Autoconf
+# Build and install under chroot
+
+# Prepare autoconf for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+

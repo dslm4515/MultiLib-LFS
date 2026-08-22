@@ -1,0 +1,17 @@
+# Final System - Automake
+# Build and install under chroot
+
+# Prepare automake for 64-bit compilation: 
+./configure --prefix=/usr --docdir=/usr/share/doc/automake-1.18.1
+
+# Compile the package:
+make 
+
+# Per LFS, using four parallel jobs speeds up the tests, even on 
+# systems with less logical cores, due to internal delays in 
+# individual tests. To test the results, issue: 
+make -j$(($(nproc)>4?$(nproc):4)) check
+
+# Install the package: 
+make install
+
