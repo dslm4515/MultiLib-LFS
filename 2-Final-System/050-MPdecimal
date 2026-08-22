@@ -1,0 +1,20 @@
+# Final System - MPdecimal
+# Build and install under chroot
+
+# Prepare mpdecimal for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--docdir=/usr/share/doc/mpdecimal-4.0.1 "
+
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# To test:
+make check_local
+
+# Install the package: 
+make install
+

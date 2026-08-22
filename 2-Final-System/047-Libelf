@@ -1,0 +1,42 @@
+# Final System - Libelf 
+# Build and install under chroot
+
+# Prepare elfutils for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-debuginfod "
+export CARGS+="--enable-libdebuginfod=dummy "
+./configure $CARGS
+
+# Compile only the library:
+make -C lib
+make -C libelf
+
+# To test the results, issue: 
+make -k check
+
+# Install the library: 
+make -C libelf install
+install -vm644 config/libelf.pc /usr/lib/pkgconfig
+
+## 32-bit elfutils
+
+# Clean the previous build
+make distclean
+
+# Prepare elfutils for 32-bit compilation:
+export CARGS+="--host=i686-pc-linux-gnu "
+export CARGS+="--libdir=/usr/lib32 "
+CC="gcc -m32" CXX="g++ -m32" ./configure $CARGS
+unset CARGS
+
+# Compile the library only:
+make -C lib
+make -C libelf
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR -C libelf install
+install -vDm644 config/libelf.pc DESTDIR/usr/lib32/pkgconfig/libelf.pc
+rm -vf DESTDIR/usr/lib32/libelf.a
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

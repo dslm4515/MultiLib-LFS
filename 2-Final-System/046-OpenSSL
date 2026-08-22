@@ -1,0 +1,46 @@
+# Final System - OpenSSL
+# Build and install under chroot
+
+# Prepare OpenSSL for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--openssldir=/etc/ssl "
+export CARGS+="--libdir=lib  "
+export CARGS+="shared zlib-dynamic "
+./config $CARGS
+
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make test
+
+# Install the package: 
+make INSTALL_LIBS= MANSUFFIX=ssl install
+
+# Per LFS, Add the version to the documentation 
+# directory name, to be consistent with other packages: 
+mv -v /usr/share/doc/openssl /usr/share/doc/openssl-4.0.1
+
+## 32-bit OpenSSL
+
+# Clean the previous build
+make distclean
+
+# Prepare OpenSSL for 32-bit compilation:
+export  CARGS="--prefix=/usr "
+export CARGS+="--openssldir=/etc/ssl "
+export CARGS+="--libdir=lib32 "
+export CARGS+="shared zlib-dynamic "
+export CARGS+="no-docs linux-x86 "
+./config $CARGS
+unset CARGS
+
+# Compile the package:
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+
