@@ -1,0 +1,51 @@
+# Final System - Meson
+# Build and install under chroot
+
+# Compile the package:
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+
+# Install the package: 
+pip3 install --no-index --find-links dist meson
+install -vDm644 data/shell-completions/bash/meson /usr/share/bash-completion/completions/meson
+install -vDm644 data/shell-completions/zsh/_meson /usr/share/zsh/site-functions/_meson
+
+# Per MLFS: When targeting the 32-bit architecture on 64-bit, some packages using Meson-based 
+# build systems will sometimes use wrong architecture-specific settings, bit sizes, and pull 
+# in libraries not meant for the architecture being targeted. This doesn't happen often but 
+# requires complex solutions to solve without cross or native files. Errors can range from 
+# linking and out-of-bounds, to other various cryptic output. 
+
+# Cross and native files specify architecture specific information which either honestly and 
+# slyly tells Meson what the target or host is so it uses correct information and libraries. 
+# Create those files now: 
+mkdir -pv /usr/share/meson/cross
+mkdir -pv /usr/share/meson/native
+for i in {cross/lib32,native/x86}; do
+cat > /usr/share/meson/$i << "EOF"
+[binaries]
+c = ['gcc', '-m32']
+cpp = ['g++', '-m32']
+rust = ['rustc', '--target', 'i686-unknown-linux-gnu']
+pkg-config = 'i686-pc-linux-gnu-pkg-config'
+ar = '/usr/bin/ar'
+strip = '/usr/bin/strip'
+cups-config = 'cups-config'
+llvm-config = 'llvm-config'
+exe_wrapper = ''
+
+[built-in options]
+libdir = 'lib32'
+
+[properties]
+sizeof_void* = 4
+sizeof_long = 4
+
+[host_machine]
+system = 'linux'
+subsystem = 'linux'
+kernel = 'linux'
+cpu_family = 'x86'
+cpu = 'i686'
+endian = 'little'
+EOF
+done
