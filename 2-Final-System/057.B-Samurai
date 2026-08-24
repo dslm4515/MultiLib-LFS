@@ -1,0 +1,16 @@
+# Final System - Samurai
+# Build and install under chroot
+
+# NOTE: Samurai can be built instead of ninja
+
+# Compile the package:
+CC=gcc make PREFIX=/usr  
+
+
+# Install the package: 
+make PREFIX=/usr install
+
+# If ninja is not built OR ninja will not be the default,
+# create the link:
+ln -sv samu /usr/bin/ninja
+
