@@ -1,0 +1,20 @@
+# Final System - Groff
+# Build and install under chroot
+
+# For users in the United States, PAGE=letter is appropriate. 
+# Elsewhere, PAGE=A4 may be more suitable.
+# It can be overridden later by echoing either `A4` or 
+# `letter` to the `/etc/papersize` file.
+
+# Prepare Groff for 64-bit compilation: 
+PAGE=letter ./configure --prefix=/usr
+
+# Compile the package:
+make -j1
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+

@@ -1,0 +1,32 @@
+# Final System - Kmod   
+# Build and install under chroot
+
+# Prepare kmod for 64-bit compilation: 
+export  MARGS="--prefix=/usr "
+export MARGS+="--buildtype=release "
+export MARGS+="-D manpages=false "
+
+meson setup $MARGS build 
+
+# Compile the package:
+ninja -C build
+
+# Install the package: 
+ninja -C build  install
+
+## 32-bit kmod
+
+# Clean the previous build
+rm -rf build/*
+
+# Prepare kmod for 32-bit compilation:
+meson setup $MARGS --cross-file=lib32 build
+
+# Compile the package:
+ninja -C build
+
+# Install the package: 
+DESTDIR=$PWD/DESTDIR ninja -C build install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR
+

@@ -1,0 +1,50 @@
+# Final System - Coreutils
+# Build and install under chroot
+
+# Per LFS, POSIX requires that programs from Coreutils recognize 
+# character boundaries correctly even in multibyte locales. The 
+# following patch fixes this non-compliance and other 
+# internationalization-related bugs. 
+patch -Np1 -i ../patches/coreutils-ml.lfs/coreutils-9.11-i18n-1.patch
+
+# Prepare coreutils for 64-bit compilation: 
+autoreconf -fv
+automake -af
+FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, first, run the tests that are meant to 
+# be run as user root:
+make NON_ROOT_USERNAME=tester check-root
+
+# Run the remainder of the tests as the tester user. Certain 
+# tests require that the user be a member of more than one 
+# group. So that these tests are not skipped, add a temporary 
+# group and make the user tester a part of it: 
+groupadd -g 102 dummy -U tester
+
+# Per LFS, fix some of the permissions so that the non-root 
+# user can compile and run the tests: 
+chown -R tester . 
+
+# Per LFS, now run the tests (using /dev/null for the standard 
+# input, or two tests may be broken if building LFS in a 
+# graphical terminal or a session in SSH or GNU Screen because 
+# the standard input is connected to a PTY from host distro, 
+# and the device node for such a PTY cannot be accessed 
+# from the LFS chroot environment): 
+su tester -c "PATH=$PATH make -k RUN_EXPENSIVE_TESTS=yes check" \
+   < /dev/null
+
+# Remove the temporary group: 
+groupdel dummy
+
+# Install the package: 
+make install
+
+# Move programs to the locations specified by the FHS: 
+mv -v /usr/bin/chroot /usr/sbin
+mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
+sed -i 's/"1"/"8"/' /usr/share/man/man8/chroot.8
