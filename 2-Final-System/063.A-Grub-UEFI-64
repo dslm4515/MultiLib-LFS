@@ -1,0 +1,27 @@
+# Final System - GRUB: 64-bit UEFI
+# Build and install under chroot
+
+# Per LFS: This build  is split up into multiple pages aimed to install 
+# for a specific boot method (BIOS, 64-bit UEFI, and 32-bit UEFI). 
+# GRUB cannot be built with all the boot method architectures at once. 
+
+# First fix a bug introduced in grub-2.14:
+sed 's/--image-base/--nonexist-linker-option/' -i configure
+
+# Prepare GRUB for 64-bit compilation: 
+export  CARGS="--prefix=/usr  "
+export CARGS+="--sysconfdir=/etc "
+export CARGS+="--target=x86_64 "
+export CARGS+="--with-platform=efi "
+export CARGS+="--disable-efiemu "
+export CARGS+="--disable-werror "
+
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# Install the package: 
+make install
+
