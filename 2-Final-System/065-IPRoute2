@@ -1,0 +1,20 @@
+# Final System - IProute2
+# Build and install under chroot
+
+# Per LFS: The arpd program included in this package will not 
+# be built since it depends on Berkeley DB, which is not 
+# installed in LFS. However, a directory and a man page for 
+# arpd will still be installed. Prevent this by running the 
+# commands shown below. 
+sed -i /ARPD/d Makefile
+rm -fv man/man8/arpd.8
+
+# Compile the package:
+make NETNS_RUN_DIR=/run/netns
+
+# Install the package: 
+make SBINDIR=/usr/sbin install
+
+# If desired, install the documentation: 
+install -vDm644 COPYING README* -t /usr/share/doc/iproute2-7.1.0
+
