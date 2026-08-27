@@ -1,0 +1,26 @@
+# Final System - Tar
+# Build and install under chroot
+
+# Per LFS: First fix the package to 
+# build with acl-2.4.0:
+patch -Np1 -i ../patches/tar-ml.lfs/tar-1.35-acl_fix-1.patch
+
+# Prepare tar for 64-bit compilation:
+FORCE_UNSAFE_CONFIGURE=1 \
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# NOTE: Per LFS, One test, capabilities: binary store/restore, 
+# is known to fail if it is run because LFS lacks selinux, 
+# but will be skipped if the host kernel does not support 
+# extended attributes or security labels on the filesystem 
+# used for building LFS. 
+
+# Install the package: 
+make install
+
