@@ -1,0 +1,60 @@
+# Final System - Util-Linux
+# Build and install under chroot
+
+# Prepare util-linux for 64-bit compilation: 
+export  CARGS="--bindir=/usr/bin "
+export CARGS+="--libdir=/usr/lib "
+export CARGS+="--runstatedir=/run "
+export CARGS+="--sbindir=/usr/sbin "
+export CARGS+="--disable-chfn-chsh "
+export CARGS+="--disable-login "
+export CARGS+="--disable-nologin "
+export CARGS+="--disable-su "
+export CARGS+="--disable-setpriv "
+export CARGS+="--disable-runuser "
+export CARGS+="--disable-pylibmount "
+export CARGS+="--disable-liblastlog2 "
+export CARGS+="--disable-static "
+export CARGS+="--without-python "
+export CARGS+="--docdir=/usr/share/doc/util-linux-2.42.2 "
+
+./configure $CARGS ADJTIME_PATH=/var/lib/hwclock/adjtime
+
+# Compile the package:
+make 
+
+# To test the results, create a dummy /etc/fstab file to 
+# satisfy two tests and run the test suite as a non-root user:  
+touch /etc/fstab
+chown -R tester .
+su tester -c "make -k check"
+
+# Install the package: 
+make install
+
+# 32-bit Build
+
+# Clean previous build:
+make distclean
+
+# Per LFS, Move a tool out of the way which is optionally 
+# used by configure but will report invalid paths for 
+# multilib builds.
+mv /usr/bin/ncursesw6-config{,.tmp}
+
+# Prepare Util-linux for compilation: 
+export CARGS+="--host=i686-pc-linux-gnu "
+export CARGS+="--libdir=/usr/lib32 "
+
+CC="gcc -m32" ./configure $CARGS ADJTIME_PATH=/var/lib/hwclock/adjtime
+
+# Restore the tool previously moved away: 
+mv /usr/bin/ncursesw6-config{.tmp,}
+
+# Compile
+make
+
+# Install the package: 
+make DESTDIR=$PWD/DESTDIR install
+cp -Rv DESTDIR/usr/lib32/* /usr/lib32
+rm -rf DESTDIR  

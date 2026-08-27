@@ -1,0 +1,29 @@
+# Final System - Texinfo
+# Build and install under chroot
+
+# Prepare texinfo for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
+# Optionally, install the components 
+# belonging in a TeX installation: 
+make TEXMF=/usr/share/texmf install-tex
+
+# Per LFS: If the /usr/share/info/dir file 
+# ever needs to be recreated, the following 
+# optional commands will accomplish the task:
+pushd /usr/share/info
+  rm -v dir
+  for f in *
+    do install-info $f dir 2>/dev/null
+  done
+popd
+
