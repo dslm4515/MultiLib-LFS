@@ -1,0 +1,35 @@
+# Final System - Runit
+# Build and install under chroot
+
+# NOTE: Source tarball unpacks as admin/runit-2.3.1
+
+cd src
+
+# Configure it as static
+echo "gcc -D_GNU_SOURCE -static" > conf-cc
+echo "gcc -static -Wl,-z -Wl,noexecstack" > conf-ld
+
+# Per Void Linux, set default service path to /var/service
+sed -e 's:^char \*varservice ="/service/";$:char \*varservice ="/var/service/";:' -i sv.c
+
+# Configure source
+make sysdeps
+
+# Compile the package:
+make
+
+# To test the results, issue: 
+make check 
+
+# Install the package: 
+for b in chpst runit runit-init runsv runsvchdir \
+         runsvdir sv svlogd utmpset;
+do
+  cp -v $b /usr/sbin/
+done
+
+# Create a link so that runit is executed as process 0
+ln -sv runit /usr/sbin/init
+
+# If desired, install documentation
+cp -v ../man/* /usr/share/man/man8/
