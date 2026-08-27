@@ -1,0 +1,12 @@
+# Final System - Libpipeline
+# Build and install under chroot
+
+# Prepare libpipeline for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# Install the package: 
+make install
+

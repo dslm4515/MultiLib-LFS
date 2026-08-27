@@ -1,0 +1,16 @@
+# Final System - Make
+# Build and install under chroot
+
+# Prepare make for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+
+# Install the package: 
+make install
+
