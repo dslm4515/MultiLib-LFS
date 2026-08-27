@@ -1,0 +1,23 @@
+# Final System - Procps-ng
+# Build and install under chroot
+
+# Prepare procps-ng for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--disable-static "
+export CARGS+="--disable-kill "
+export CARGS+="--enable-watch8bit "
+export CARGS+="--docdir=/usr/share/doc/procps-ng-4.0.7 "
+
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+
+# Install the package: 
+make install
+

@@ -1,0 +1,25 @@
+# Final System - Man-DB
+# Build and install under chroot
+
+# Prepare man-db for 64-bit compilation: 
+export  CARGS="--prefix=/usr "
+export CARGS+="--docdir=/usr/share/doc/man-db-2.13.1 "
+export CARGS+="--sysconfdir=/etc "
+export CARGS+="--disable-setuid "
+export CARGS+="--enable-cache-owner=bin "
+export CARGS+="--with-browser=/usr/bin/lynx "
+export CARGS+="--with-vgrind=/usr/bin/vgrind "
+export CARGS+="--with-grap=/usr/bin/grap "
+
+./configure $CARGS
+unset CARGS
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make check
+
+# Install the package: 
+make install
+
