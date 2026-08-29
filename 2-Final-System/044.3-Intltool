@@ -1,0 +1,19 @@
+# Final System - Intltool   
+# Build and install under chroot
+
+# Per LFS, First fix a warning that is caused 
+# by perl-5.22 and later: 
+sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+
+# Prepare intltool for compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+make test
+
+# Install the package: 
+make install
+
