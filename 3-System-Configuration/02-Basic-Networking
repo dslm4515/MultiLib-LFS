@@ -1,0 +1,89 @@
+# Final System - Basic Networking 
+# Build and install under chroot
+
+## Static Configuration
+
+# A simple way to configure a static network at boot is to add 
+# the necessary ip commands to the /etc/rc.local file:
+cat >> /etc/rc.local << "EOF"
+ip link set dev eth0 up
+ip addr add 192.168.1.2/24 brd + dev eth0
+ip route add default via 192.168.1.1
+
+## Creating the /etc/resolv.conf File (optional) 
+
+# The system will need some means of obtaining Domain Name Service 
+# (DNS) name resolution to resolve Internet domain names to IP 
+# addresses, and vice versa. This is best achieved by placing 
+# the IP address of the DNS server, available from the ISP or 
+# network administrator, into /etc/resolv.conf. Create the file 
+# by running the following: 
+cat > /etc/resolv.conf << "EOF"
+# Begin /etc/resolv.conf
+
+domain <Your Domain Name>
+nameserver <IP address of your primary nameserver>
+nameserver <IP address of your secondary nameserver>
+
+# End /etc/resolv.conf
+EOF
+
+# NOTE: The Google Public IPv4 DNS addresses are 8.8.8.8 and 8.8.4.4.
+
+## Configuring the System Hostname 
+
+# During the boot process, the file /etc/hostname is used for establishing 
+# the system's hostname.
+# Create the /etc/hostname file and enter a hostname by running: 
+echo "<fmmlfs>" > /etc/hostname
+
+## Customizing the /etc/hosts File
+
+# Decide on a fully-qualified domain name (FQDN), and possible aliases for 
+# use in the /etc/hosts file. If using static IP addresses, you'll also 
+# need to decide on an IP address. The syntax for a hosts file entry is: 
+IP_address myhost.example.org aliases
+
+# Unless the computer is to be visible to the Internet (i.e., there is 
+# a registered domain and a valid block of assigned IP addresses—most 
+# users do not have this), make sure that the IP address is in the 
+# private network IP address range. Valid ranges are: 
+Private Network Address Range      Normal Prefix
+10.0.0.1 - 10.255.255.254           8
+172.x.0.1 - 172.x.255.254           16
+192.168.y.1 - 192.168.y.254         24
+
+# x can be any number in the range 16-31. y can be any number in the 
+# range 0-255.
+
+# A valid private IP address could be 192.168.1.2.
+
+# If the computer is to be visible to the Internet, a valid FQDN can 
+# be the domain name itself, or a string resulted by concatenating a 
+# prefix (often the hostname) and the domain name with a “.” character. 
+# And, you need to contact the domain provider to resolve the FQDN to 
+# your public IP address.
+
+# Even if the computer is not visible to the Internet, a FQDN is still 
+# needed for certain programs, such as MTAs, to operate properly. A 
+# special FQDN, localhost.localdomain, can be used for this purpose.
+
+# Create the /etc/hosts file by running: 
+cat > /etc/hosts << "EOF"
+# Begin /etc/hosts
+
+127.0.0.1 localhost.localdomain localhost
+127.0.1.1 <FQDN> <HOSTNAME>
+<192.168.1.2> <FQDN> <HOSTNAME> [alias1] [alias2 ...]
+::1       localhost ip6-localhost ip6-loopback
+ff02::1   ip6-allnodes
+ff02::2   ip6-allrouters
+
+# End /etc/hosts
+EOF
+
+# NOTE: The <192.168.1.2>, <FQDN>, and <HOSTNAME> values need to be 
+# changed for specific uses or requirements (if assigned an IP address 
+# by a network/system administrator and the machine will be connected 
+# to an existing network). The optional alias name(s) can be omitted. 
+#

@@ -1,0 +1,166 @@
+# Final System - Linux kernel
+# Build and install under chroot
+
+# Building the kernel involves a few steps—configuration, compilation, 
+# and installation. Read the README file in the kernel source tree for 
+# alternative methods to the way this book configures the kernel.
+
+# Prepare for compilation by running the following command: 
+make mrproper
+
+# This ensures that the kernel tree is absolutely clean. The kernel 
+# team recommends that this command be issued prior to each kernel 
+# compilation. Do not rely on the source tree being clean after 
+# un-tarring.
+
+# There are several ways to configure the kernel options. Usually, 
+# this is done through a menu-driven interface, for example:
+make menuconfig
+
+# NOTE: A good starting place for setting up the kernel configuration 
+# is to run make defconfig. This will set the base configuration to a 
+# good state that takes your current system architecture into account.
+
+#  Be sure to enable/disable/set the following features or the system 
+#  might not work correctly or boot at all:
+
+General setup --->
+  [ ] Compile the kernel with warnings as errors                        [WERROR]
+  CPU/Task time and stats accounting --->
+    [*] Pressure stall information tracking                                [PSI]
+    [ ]   Require boot parameter to enable pressure stall information tracking
+                                                     ...  [PSI_DEFAULT_DISABLED]
+  < > Enable kernel headers through /sys/kernel/kheaders.tar.xz      [IKHEADERS]
+  [*] Control Group support --->                                       [CGROUPS]
+    [*]   Memory controller                                              [MEMCG]
+    [ /*] CPU controller --->                                     [CGROUP_SCHED]
+      # This may cause some systemd features malfunction:
+      [ ] Group scheduling for SCHED_RR/FIFO                    [RT_GROUP_SCHED]
+  [ ] Configure standard kernel features (expert users) --->            [EXPERT]
+
+Processor type and features --->
+  [*] Build a relocatable kernel                                   [RELOCATABLE]
+  [*]   Randomize the address of the kernel image (KASLR)       [RANDOMIZE_BASE]
+
+General architecture-dependent options --->
+  [*] Stack Protector buffer overflow detection                 [STACKPROTECTOR]
+  [*]   Strong Stack Protector                           [STACKPROTECTOR_STRONG]
+
+[*] Networking support --->                                                [NET]
+  Networking options --->
+    [*] TCP/IP networking                                                 [INET]
+    [*]   The IPv6 protocol --->                                          [IPV6]
+
+Device Drivers --->
+  Generic Driver Options --->
+    [ ] Support for uevent helper                                [UEVENT_HELPER]
+    [*] Maintain a devtmpfs filesystem to mount at /dev               [DEVTMPFS]
+    [*]   Automount devtmpfs at /dev, after the kernel mounted the rootfs
+                                                           ...  [DEVTMPFS_MOUNT]
+    Firmware loader --->
+      [ ] Enable the firmware sysfs fallback mechanism   [FW_LOADER_USER_HELPER]
+  Firmware Drivers --->
+    [*] Export DMI identification via sysfs to userspace                 [DMIID]
+    [*] Mark VGA/VBE/EFI FB as generic system framebuffer       [SYSFB_SIMPLEFB]
+  Character devices --->
+    -*- Enable TTY                                                         [TTY]
+    [ ]   Allow legacy TIOCSTI usage                            [LEGACY_TIOCSTI]
+  Graphics support --->
+    <*>    Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) --->
+                                                                      ...  [DRM]
+    [*]    Display a user-friendly message when a kernel panic occurs
+                                                                ...  [DRM_PANIC]
+    (kmsg)   Panic screen formatter                           [DRM_PANIC_SCREEN]
+    Supported DRM clients --->
+      [*] Enable legacy fbdev support for your modesetting driver
+                                                      ...  [DRM_FBDEV_EMULATION]
+    Drivers for system framebuffers --->
+      <*> Simple framebuffer driver                              [DRM_SIMPLEDRM]
+    Console display driver support --->
+      [*] Framebuffer Console support                      [FRAMEBUFFER_CONSOLE]
+
+File systems --->
+  [*] Inotify support for userspace                               [INOTIFY_USER]
+  Pseudo filesystems --->
+    [*] Tmpfs virtual memory file system support (former shm fs)         [TMPFS]
+    [*]   Tmpfs POSIX Access Control Lists                     [TMPFS_POSIX_ACL]
+
+# Enable some additional features if you are building a 64-bit system. If you are 
+# using menuconfig, enable them in the order of CONFIG_PCI_MSI first, then 
+# CONFIG_IRQ_REMAP, at last CONFIG_X86_X2APIC because an option only shows up 
+# after its dependencies are selected.
+
+Processor type and features --->
+  [*] x2APIC interrupt controller architecture support              [X86_X2APIC]
+
+Device Drivers --->
+  [*] PCI support --->                                                     [PCI]
+    [*] Message Signaled Interrupts (MSI and MSI-X)                    [PCI_MSI]
+  [*] IOMMU Hardware Support --->                                [IOMMU_SUPPORT]
+    [*] Support for Interrupt Remapping                              [IRQ_REMAP]
+
+#  The kernel on a multilib system needs to be able to identify and start binaries 
+#  compiled for different architectures than the default. Enable support for the 
+#  32-bit ABI.
+Binary Emulations --->
+  [*] IA32 Emulation                                            [IA32_EMULATION]
+  [ ]   IA32 emulation disabled by default     [IA32_EMULATION_DEFAULT_DISABLED]
+
+# If the partition for the LFS system is in a NVME SSD (i. e. the device node 
+# for the partition is /dev/nvme* instead of /dev/sd*), enable NVME support or 
+# the LFS system won't boot:
+Device Drivers --->
+  NVME Support --->
+    <*> NVM Express block device                                  [BLK_DEV_NVME]
+
+# If you are booting with UEFI, adjust the kernel so it can have EFI partition 
+# and runtime support, on top of supporting the DOS VFAT filesystem which is 
+# needed for the EFI partition:
+Processor type and features --->
+  [*] EFI runtime service support                                          [EFI]
+  [*]   EFI stub support                                              [EFI_STUB]
+
+-*- Enable the block layer --->                                          [BLOCK]
+  Partition Types --->
+    [ /*] Advanced partition selection                      [PARTITION_ADVANCED]
+    [*]     EFI GUID Partition support                           [EFI_PARTITION]
+
+File systems --->
+  DOS/FAT/EXFAT/NT Filesystems --->
+    <*/M> VFAT (Windows-95) fs support                                 [VFAT_FS]
+  Pseudo filesystems --->
+    <*/M> EFI Variable filesystem                                    [EFIVAR_FS]
+  -*- Native language support --->                                         [NLS]
+    <*/M> Codepage 437 (United States, Canada)                [NLS_CODEPAGE_437]
+    <*/M> NLS ISO 8859-1  (Latin 1; Western European Languages)  [NLS_ISO8859_1]
+
+# Once configured, Compile the kernel image and modules: 
+make
+
+# Unless module support has been disabled in the kernel configuration, install 
+# the modules with:
+make modules_install
+
+# After kernel compilation is complete, additional steps are required to complete 
+# the installation. Some files need to be copied to the /boot directory.
+
+# The path to the kernel image may vary depending on the platform being used. 
+# The filename below can be changed to suit your taste, but the stem of the 
+# filename should be vmlinuz to be compatible with the automatic setup of the 
+# boot process described in the next section. The following command assumes an 
+# x86 architecture:
+cp -iv arch/x86/boot/bzImage /boot/vmlinuz-6.18.2
+
+# System.map is a symbol file for the kernel. It maps the function entry points 
+# of every function in the kernel API, as well as the addresses of the kernel 
+# data structures for the running kernel. It is used as a resource when 
+# investigating kernel problems. Issue the following command to install the map 
+# file:
+cp -iv System.map /boot/System.map-6.18.2
+
+# The kernel configuration file .config produced by the make menuconfig step 
+# above contains all the configuration selections for the kernel that was just 
+# compiled. It is a good idea to keep this file for future reference:
+cp -iv .config /boot/config-6.18.2
+
+ 
