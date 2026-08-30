@@ -1,0 +1,36 @@
+# Final System - Socklog
+# Build and install under chroot
+
+# OPTIONAL; Used for logging
+
+# NOTE: Source tarball unpacks as admin/socklog-2.1.2
+cd src
+
+# Configure it as static
+echo "gcc -D_GNU_SOURCE -static" > conf-cc
+echo "gcc -static -Wl,-z -Wl,noexecstack" > conf-ld
+cd -
+
+# Compile the package:
+package/compile
+
+# Install the package: 
+for b in command/*;
+do
+  cp -v $b /usr/bin/
+done
+
+# If desired, install documentation
+for d in man/*.8; 
+do
+  cp -v $d /usr/share/man/man8/
+done
+for d in man/*.1;
+do
+  cp -v $d /usr/share/man/man1/
+done
+mkdir -pv /usr/share/doc/socklog-2.1.2
+for d in doc/*.html;
+do
+  cp -v $d /usr/share/man/man1/
+done
