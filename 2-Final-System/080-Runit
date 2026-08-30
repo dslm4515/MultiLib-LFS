@@ -29,7 +29,7 @@ do
 done
 
 # Create a link so that runit is executed as process 0
-ln -sv runit /usr/sbin/init
+ln -sv runit-init /usr/sbin/init
 
 # If desired, install documentation
 cp -v ../man/* /usr/share/man/man8/
