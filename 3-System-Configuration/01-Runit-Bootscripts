@@ -1,0 +1,34 @@
+# Final System - Runit Bootscripts
+# Build and install under chroot
+
+# Bootscripts are from Void Linux with a few modifications
+
+# Install void-runit package by unpacking tarball and entering 
+# unpacked directory.
+tar xf pkgs/void-runit-20250212.tar.gz
+cd void-runit-20250212
+
+# Change the name of the distribution from Void Linux to
+# something else like "LFS"
+sed -i -e 's/Void/LFS/'  1
+sed -i -e 's/void/lfs/g' rc.conf
+sed -i -e 's/void/lfs/g' rc.local
+
+# Fix the path, as runit-init was installed in /sbin and not
+# /bin
+sed -i -e 's/bin/sbin/g' halt.c
+
+# Remove unneeded script as /{s,}bin is already a link to
+# /usr/{s,}bin
+rm -v core-services/98-sbin-merge.sh
+
+# Remove unneeded script as dracut was not installed
+rm -rv dracut 
+sed -i -e '/dracut/d' Makefile
+
+# Compile the package:
+make 
+
+# Install the package: 
+make PREFIX=/usr install
+
