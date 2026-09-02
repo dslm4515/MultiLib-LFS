@@ -1,0 +1,41 @@
+# Final System: Reboot the System
+# Build & install under chroot
+
+# Now that all of the software has been installed, it is time to 
+# reboot your computer. However, there are still a few things to 
+# check. Here are some suggestions:
+# o  Install any firmware needed if the kernel driver for your 
+#    hardware requires some firmware files to function properly.
+# o  Ensure a password is set for the root user. 
+# o  A review of the following configuration files is also 
+#    appropriate at this point.
+#    + /etc/fstab 
+#    + /etc/hosts
+#    + /etc/inputrc 
+#    + /etc/profile
+#    + /etc/resolv.conf (optional)
+#    + /etc/vimrc 
+
+# Now that we have said that, let's move on to booting our shiny new 
+# LFS installation for the first time! First exit from the chroot 
+# environment:
+logout
+
+# Then unmount the virtual file systems: 
+umount -v $LFS/dev/pts
+mountpoint -q $LFS/dev/shm && umount -v $LFS/dev/shm
+umount -v $LFS/dev
+umount -v $LFS/run
+umount -v $LFS/proc
+umount -v $LFS/sys
+
+# If multiple partitions were created, unmount the other partitions 
+# before unmounting the main one, like this:
+umount -v $LFS/home
+umount -v $LFS
+
+# Unmount the LFS file system itself:
+umount -v $LFS
+
+# Now, reboot the system. 
+    
