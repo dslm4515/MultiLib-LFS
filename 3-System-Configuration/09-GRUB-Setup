@@ -1,0 +1,122 @@
+# Final System- GRUB Setup
+# Build & install under chroot
+
+## Intro
+
+# WARNING: Configuring GRUB incorrectly can render your system 
+# inoperable without an alternate boot device such as a CD-ROM or 
+# bootable USB drive. This section is not required to boot your LFS 
+# system. You may just want to modify your current boot loader, e.g. 
+# Grub-Legacy or GRUB2.
+
+# Ensure that an emergency boot disk is ready to “rescue” the 
+# computer if the computer becomes unusable (un-bootable). If you do 
+# not already have a boot device, you can create one. In order for the 
+# procedure below to work, you need to jump ahead to BLFS and install 
+# xorriso from the libisoburn package.
+cd /tmp
+grub-mkrescue --output=grub-img.iso
+xorriso -as cdrecord -v dev=/dev/cdrw blank=as_needed grub-img.iso
+
+## Turn off Secure Boot
+
+# LFS does not have the essential packages to support Secure Boot. 
+# To set up the boot process following the instructions in this section, 
+# Secure Boot must be turned off from the configuration interface of 
+# the firmware. Read the documentation provided by the manufacturer 
+# of your system to find out how to turn off Secure Boot support.
+
+## GRUB Naming Conventions 
+
+# GRUB uses its own naming structure for drives and partitions in 
+# the form of (hdn,m), where n is the hard drive number and m is the 
+# partition number. The hard drive numbers start from zero, but the 
+# partition numbers start from one for normal partitions (from five 
+# for extended partitions). Note that this is different from earlier 
+# versions where both numbers started from zero. For example, partition 
+# sda1 is (hd0,1) to GRUB and sdb3 is (hd1,3). In contrast to Linux, 
+# GRUB does not consider CD-ROM drives to be hard drives. For example, 
+# if using a CD on hdb and a second hard drive on hdc, that second 
+# hard drive would still be (hd1).
+
+## Setting Up the Configuration 
+
+# If booting the system via UEFI, GRUB works by storing the main 
+# GRUB image as a PE-COFF executable file at a standard location in 
+# the EFI System Partition: EFI/BOOT/BOOTX64.EFI (or 
+# EFI/BOOT/BOOTIA32.EFI for i386-efi). The UEFI firmware loads it 
+# from the standard location and executes it, launching GRUB.
+
+# Many GRUB functions (including booting the Linux kernel) are not 
+# included in the main GRUB image. Instead, they are stored in a file 
+# system as GRUB modules. That file system is usually mounted in a 
+# way that the GRUB modules can be accessed in /boot/grub on most 
+# Linux distributions. To avoid the chicken-and-egg problem, 
+# grub-install embeds the modules necessary to access this file 
+# system into the main GRUB image, so it can find and load other 
+# modules.
+
+# The location of the boot partition is a choice of the user that 
+# affects the configuration. One recommendation is to have a 
+# separate small (suggested size is 200 MB) partition just for boot 
+# information. In doing so, not just LFS, but any Linux distribution, 
+# can access the same boot files, and in turn any booted system. If 
+# you choose to do this, you will need to mount the separate 
+# partition, move all files in the current /boot directory (e.g. 
+# the Linux kernel you just built in the previous section) to the 
+# new partition. You will then need to unmount the partition and 
+# remount it as /boot. If you do this, be sure to update /etc/fstab.
+
+## Booting With UEFI 
+
+# For booting with UEFI, make sure the boot partition is mounted 
+# (if using a separate one) and the EFI System Partition is mounted 
+# at /boot/efi. After that, install the GRUB files into /boot/grub 
+# and the main GRUB image at /boot/efi/EFI/BOOT/BOOTX64.EFI:
+#
+## WARNING : The following command will overwrite the 
+## /boot/efi/EFI/BOOT/BOOTX64.EFI file. If it already exists, it's 
+## likely that it's the entry of another boot loader (for example 
+## the GRUB installation from the host distro, or the Windows Boot 
+## Manager). Backup the file so it can be restored later or loaded 
+## as a secondary boot loader by the new GRUB installation from LFS.
+grub-install --target=x86_64-efi --removable
+
+# The command above assumes that you have 64-bit UEFI firmware. 
+# If you want to make the system bootable on 32-bit UEFI firmware, 
+# run the command with x86_64-efi replaced by i386-efi.
+
+## Creating the GRUB Configuration File
+
+# Generate /boot/grub/grub.cfg: 
+cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=5
+
+insmod part_gpt
+insmod ext2
+
+set root=(hd0,2)
+set gfxpayload=1024x768x32
+
+menuentry "GNU/Linux, Linux 7.1.8" {
+        linux   /boot/vmlinuz-7.1.8 root=/dev/sda2 ro
+}
+EOF
+
+# The insmod commands load the GRUB modules named part_gpt and 
+# ext2. Despite the naming, ext2 actually supports ext2, ext3, and 
+# ext4 filesystems. In a typical configuration, the part_gpt and ext2 
+# modules are already embedded in the main GRUB image by grub-install, 
+# and the insmod commands for them will do nothing. However, they do 
+# no harm anyway, and they may be needed with some rare configurations.
+
+# The set gfxpayload=1024x768x32 command sets the resolution and color 
+# depth of the VESA framebuffer to be passed to the kernel. It's 
+# necessary for the kernel SimpleDRM driver to use the VESA framebuffer. 
+# You can use a different resolution or color depth value which better 
+# suits for your monitor. This line does nothing when the system is 
+# booted via UEFI, but it does no harm anyway.
+
+       
