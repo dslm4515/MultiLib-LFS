@@ -23,9 +23,9 @@ Currently only i686/amd64. Will add more once x86 is complete.
 <ul>
 <li> Kernel: Linux (main stream) </li>
 <li> C Library: Glibc </li>
-<li> Init: S6+S6-rc </li>
+<li> Init: Runit </li>
 <li> Compiler: GCC </li>
-<li> SSL: LibreSSL or OpenSSL </li>
+<li> SSL: OpenSSL </li>
 </ul>
 
 # Host Requirements
