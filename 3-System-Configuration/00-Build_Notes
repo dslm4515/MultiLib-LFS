@@ -1,0 +1,6 @@
+# Final System Configuration
+
+Packages for the final system are built and it is time to setup the 
+final system to boot and run.
+
+Again, this will still be done under a chroot environment.
