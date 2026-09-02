@@ -1,0 +1,35 @@
+# Final System: System Info
+# Build & install under chroot
+
+# It may be a good idea to create an /etc/lfs-release file. By having 
+# this file, it is very easy for you to find out which LFS version is 
+# installed on the system. Create this file by running:
+echo "FMMLFS 20260801" > /etc/lfs-release
+
+# Two files describing the installed system may be used by packages 
+# that can be installed on the system later, either in binary form or 
+# by building them.
+
+# The first one shows the status of your new system with respect to 
+# the Linux Standards Base (LSB). To create this file, run:
+cat > /etc/lsb-release << "EOF"
+DISTRIB_ID="Forked MultiLib Linux From Scratch"
+DISTRIB_RELEASE="FMMLFS 20260801"
+DISTRIB_CODENAME="<your name here>"
+DISTRIB_DESCRIPTION="Linux From Scratch"
+EOF
+
+# The second one contains roughly the same information, and is used 
+# by some graphical desktop environments. To create this file, run:
+cat > /etc/os-release << "EOF"
+NAME="Forked MulitLib Linux From Scratch"
+VERSION="FMMLFS 20260801"
+ID=lfs
+PRETTY_NAME="Multilib Linux From Scratch 20260801"
+VERSION_CODENAME="<your name here>"
+HOME_URL="https://github.com/dslm4515/MultiLib-LFS"
+RELEASE_TYPE="development"
+EOF
+
+# Be sure to customize the fields 'DISTRIB_CODENAME' and 
+# 'VERSION_CODENAME' to make the system uniquely yours.  
