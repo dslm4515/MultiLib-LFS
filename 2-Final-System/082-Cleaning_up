@@ -1,0 +1,21 @@
+# Final System - Cleaning up
+# Build and install under chroot
+
+# Finally, clean up some extra files left over from 
+# running tests:
+rm -rf /tmp/{*,.*}
+
+# There are also several files in the /usr/lib and 
+# /usr/libexec directories with a file name extension 
+# of .la. These are "libtool archive" files. On a 
+# modern Linux system the libtool .la files are 
+# only useful for libltdl. No libraries in LFS are 
+# expected to be loaded by libltdl, and it's known 
+# that some .la files can break BLFS package builds. 
+# Remove those files now:
+find /usr/lib{,32,exec} -name \*.la -delete
+
+# Finally, remove the temporary 'tester' user account 
+# created at the beginning of the build.
+userdel -r tester
+  
