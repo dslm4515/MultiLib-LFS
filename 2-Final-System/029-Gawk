@@ -1,0 +1,22 @@
+# Final System - Gawk
+# Build and install under chroot
+
+# First, ensure some unneeded files are not installed: 
+sed -i 's/extras//' Makefile.in
+
+# Prepare gawk for 64-bit compilation: 
+./configure --prefix=/usr
+
+# Compile the package:
+make 
+
+# To test the results, issue: 
+chown -R tester .
+su tester -c "PATH=$PATH make check"
+
+# Install the package: 
+make install
+ln -sv gawk.1 /usr/share/man/man1/awk.1
+
+# Install the documentation if desired:
+install -vDm644 doc/{awkforai.txt,*.{eps,pdf,jpg}} -t /usr/share/doc/gawk-5.3.2
