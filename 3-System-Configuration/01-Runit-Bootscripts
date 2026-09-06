@@ -32,3 +32,5 @@ make
 # Install the package: 
 make PREFIX=/usr install
 
+# Create missing link
+ln -svf ../run/runit/runsvdir/current /var/service
